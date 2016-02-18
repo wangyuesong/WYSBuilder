@@ -46,21 +46,27 @@ public class RestAuthenticationFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filter) throws IOException,
             ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String authCredentials = httpServletRequest
-                .getHeader(AUTHENTICATION_HEADER);
-
-        AuthenticationService service = new AuthenticationService();
-        boolean authenticationStatus = service.doAuth(authCredentials);
-        if (authenticationStatus) {
+        String path = httpServletRequest.getRequestURI();
+        //Ignore cors test
+        if(httpServletRequest.getMethod() == "OPTIONS"){
             filter.doFilter(request, response);
-        } else {
-            if (response instanceof HttpServletResponse) {
-                HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                httpServletResponse
-                        .setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+        if (!path.contains("/rest/user")) {
+            String authCredentials = httpServletRequest
+                    .getHeader(AUTHENTICATION_HEADER);
+            AuthenticationService service = new AuthenticationService();
+            boolean authenticationStatus = service.doAuth(authCredentials);
+            if (!authenticationStatus) {
+                if (response instanceof HttpServletResponse) {
+                    System.out.println("Authroize failed");
+                    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                    httpServletResponse
+                            .setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
             }
         }
-
+        filter.doFilter(request, response);
     }
 
     /*

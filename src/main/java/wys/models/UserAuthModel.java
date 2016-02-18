@@ -1,4 +1,4 @@
-package wys.user;
+package wys.models;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version V1.0
  */
 @XmlRootElement
-public class UserRegistrationModel {
+public class UserAuthModel {
     private String email;
     private String password;
 

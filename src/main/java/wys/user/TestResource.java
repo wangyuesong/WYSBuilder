@@ -9,10 +9,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import wys.message.JsonResponse;
 import wys.message.JsonResponse.ResponseType;
-import wys.models.UserAuthModel;
+import wys.models.TestModel;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -34,8 +35,8 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
  * @date Feb 11, 2016 12:48:40 AM
  * @version V1.0
  */
-@Path("/user")
-public class UserResource {
+@Path("/test")
+public class TestResource {
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -66,46 +67,21 @@ public class UserResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public JsonResponse createUser(UserAuthModel regModel) throws IOException {
-        Key key = KeyFactory.createKey("User", regModel.getEmail());
+    public Response createUser(TestModel test) throws IOException {
+        Key key = KeyFactory.createKey("Test", test.getKey());
         Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, key);
         List<Entity> results = getResults(datastore, key, keyFilter);
         if (results.size() == 0) {
-            Entity e = new Entity(KeyFactory.createKey("User", regModel.getEmail()));
-            e.setProperty("password", regModel.getPassword());
+            Entity e = new Entity(KeyFactory.createKey("Test", test.getKey()));
             datastore.put(e);
-            return new JsonResponse(ResponseType.SUCCESS, "Registration Success");
+            return Response.ok(new JsonResponse(ResponseType.SUCCESS, "Create test Success")).build();
         } else {
-            return new JsonResponse(ResponseType.FAILED, "Username already taken");
+            return Response.status(Status.BAD_REQUEST).entity(new JsonResponse(ResponseType.FAILED, "Test already taken")).build();
         }
     }
     
     
     
-    /**
-     * 
-     * Description: doLogin
-     * @param regModel
-     * @return
-     * @throws IOException
-     * JsonResponse
-     */
-    @Path("/login")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response login(UserAuthModel regModel) throws IOException {
-        Key key = KeyFactory.createKey("User", regModel.getEmail());
-        Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, key);
-        List<Entity> results = getResults(datastore, key, keyFilter);
-        if (results.size() == 0) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new JsonResponse(ResponseType.FAILED, "No user found")).build();
-        }else if (!results.get(0).getProperty("password").equals(regModel.getPassword())) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(new JsonResponse(ResponseType.FAILED, "Incorrect Password")).build();
-        }else {
-            return Response.ok(new JsonResponse(ResponseType.SUCCESS, "LoginSuccess")).build();
-        }
-    }
     
     
 
