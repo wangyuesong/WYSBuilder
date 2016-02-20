@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import wys.message.JsonResponse;
 import wys.message.JsonResponse.ResponseType;
 import wys.models.UserAuthModel;
+import wys.utils.DatastoreUtils;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -69,7 +70,7 @@ public class UserResource {
     public JsonResponse createUser(UserAuthModel regModel) throws IOException {
         Key key = KeyFactory.createKey("User", regModel.getEmail());
         Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, key);
-        List<Entity> results = getResults(datastore, key, keyFilter);
+        List<Entity> results = DatastoreUtils.getResults(datastore, key, keyFilter);
         if (results.size() == 0) {
             Entity e = new Entity(KeyFactory.createKey("User", regModel.getEmail()));
             e.setProperty("password", regModel.getPassword());
@@ -97,7 +98,7 @@ public class UserResource {
     public Response login(UserAuthModel regModel) throws IOException {
         Key key = KeyFactory.createKey("User", regModel.getEmail());
         Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, key);
-        List<Entity> results = getResults(datastore, key, keyFilter);
+        List<Entity> results = DatastoreUtils.getResults(datastore, key, keyFilter);
         if (results.size() == 0) {
             return Response.status(Response.Status.BAD_REQUEST).entity(new JsonResponse(ResponseType.FAILED, "No user found")).build();
         }else if (!results.get(0).getProperty("password").equals(regModel.getPassword())) {
@@ -109,9 +110,6 @@ public class UserResource {
     
     
 
-    private List<Entity> getResults(DatastoreService datastore, Key key, Filter keyFilter) {
-        Query q = new Query().setFilter(keyFilter);
-        return datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-    }
+  
 
 }
