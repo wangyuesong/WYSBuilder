@@ -34,7 +34,7 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
  * @version V1.0
  */
 @Path("/auth")
-public class AuthResource {
+public class RepoResource {
     
     public final static String CLIENT_ID = "2dec25a28baf921db035";
     public final static String CLIENT_SECRET ="ef560b8ceed05ae3ecf4a8872877871e91871991";
