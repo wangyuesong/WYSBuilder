@@ -1,4 +1,4 @@
-package wys.user;
+package wys.resource;
 
 import java.io.IOException;
 import java.util.List;

@@ -6,7 +6,7 @@
 		<!-- Register resources and providers under com.vogella.jersey.first package. -->
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>wys.user</param-value>
+			<param-value>wys.resource</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -14,6 +14,7 @@
 		<servlet-name>Jersey REST Service</servlet-name>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
+	
 	
 	<filter>
 		<filter-name>cross-origin</filter-name>
@@ -24,8 +25,7 @@
 		</init-param>
 		<init-param>
 			<param-name>allowedHeaders</param-name>
-			<!-- Need to allow authorization headers -->
-			<param-value>X-Requested-With,Content-Type,Accept,Origin,Authorization</param-value>
+			<param-value>X-Requested-With,Content-Type,Accept,Origin,Authentication</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>
