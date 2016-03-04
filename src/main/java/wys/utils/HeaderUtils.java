@@ -36,12 +36,11 @@ public class HeaderUtils {
         if(headerToken == null || headerToken == "")
             return false;
         Key userKey = KeyFactory.createKey("User", id);
-        Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, userKey);
-        List<Entity> results = DatastoreUtils.getResults(datastore, userKey, keyFilter);
-        if(results.size() == 0){
+        Entity e = DatastoreUtils.getOneResultByKey(datastore, userKey);
+        if(e == null){
             return false;
         }
-        if(!results.get(0).getProperty("builderToken").equals(headerToken)){
+        if(!e.getProperty("builderToken").equals(headerToken)){
             return false;
         }
         return true;

@@ -24,11 +24,10 @@ public class UsersResource {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     
-    @Path("{id}/repos")
-    public RepoResource getRepoResource(@Context HttpServletRequest r, @PathParam("id") int id){
-        System.out.println(r.getPathInfo());
-        System.out.println(r.getMethod());
-        return new RepoResource(id);
+    @Path("{userId}/repos")
+    public RepoResource getRepoResource(@Context HttpServletRequest r, @PathParam("userId") int userId){
+        System.out.println(r.getMethod()+ " " +r.getPathInfo());
+        return new RepoResource(userId);
     }
     
     @GET

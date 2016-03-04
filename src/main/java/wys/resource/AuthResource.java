@@ -59,46 +59,39 @@ public class AuthResource {
             @Context HttpServletResponse currentResponse, OAuthTokenModel model) throws IOException {
         gitClient.setOAuth2Token(model.getAccess_token());
         User u = new UserService(gitClient).getUser();
-        RepositoryService repoService = new RepositoryService();
        
-        Key userKey = KeyFactory.createKey("User", u.getId());
-        createOrUpdateUser(model, u, userKey);
-        createOrUpdateUserRepos(u, repoService.getRepositories(u.getName()),userKey);
+        createOrUpdateUser(model, u);
         //TODO NEED ADD ENCRYPTION HERE
         return new OAuthResponseModel(new UserInfo(u.getId(), u.getAvatarUrl(), u.getName(), u.getUrl(),u.getEmail()), model.getAccess_token());
     }
 
-    /** 
-     * Description: TODO
-     * @param u
-     * @param repositories
-     * void
-     */
-    private void createOrUpdateUserRepos(User u, List<Repository> repositories,Key userKey) {
-        List<Entity> repoEntities = new ArrayList<Entity>();
-        for(Repository repo: repositories){
-            Entity entity = new Entity("Repository",repo.getId(),userKey);
-            repoEntities.add(entity);
-        }
-        datastore.put(repoEntities);
-    }
+//    /** 
+//     * Description: TODO
+//     * @param u
+//     * @param repositories
+//     * void
+//     */
+//    private void createOrUpdateUserRepos(User u, List<Repository> repositories,Key userKey) {
+//        List<Entity> repoEntities = new ArrayList<Entity>();
+//        for(Repository repo: repositories){
+//            Entity entity = new Entity("Repository",repo.getId(),userKey);
+//            repoEntities.add(entity);
+//        }
+//        datastore.put(repoEntities);
+//    }
 
     /** 
-     * Description: TODO
+     * Description: Create/Update user
      * @param model
      * @param u
      * @param key
      * void
      */
-    private void createOrUpdateUser(OAuthTokenModel model, User u, Key key) {
-        Filter keyFilter = new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, key);
-        List<Entity> results = DatastoreUtils.getResults(datastore, key, keyFilter);
+    private void createOrUpdateUser(OAuthTokenModel model, User u) {
+        Key userKey = KeyFactory.createKey("User", u.getId());
+        Entity result = DatastoreUtils.getOneResultByKey(datastore, userKey);
         // User exists
-        Entity result = null;
-        if (results.size() != 0) {
-            result = results.get(0); 
-        }
-        else{
+        if (result == null) {
             result = new Entity("User", u.getId());
         }
         // Not exist before, create
@@ -117,6 +110,7 @@ public class AuthResource {
      *            void
      */
     private void updateEntityWithGithubModelAndToken(Entity e, User g, String builderToken) {
+        e.setProperty("user_id", g.getId());
         e.setProperty("login",g.getLogin());
         e.setProperty("builderToken", builderToken);
         e.setProperty("url", g.getUrl());
