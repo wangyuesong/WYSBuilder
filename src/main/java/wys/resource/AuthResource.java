@@ -65,21 +65,6 @@ public class AuthResource {
         return new OAuthResponseModel(new UserInfo(u.getId(), u.getAvatarUrl(), u.getName(), u.getUrl(),u.getEmail()), model.getAccess_token());
     }
 
-//    /** 
-//     * Description: TODO
-//     * @param u
-//     * @param repositories
-//     * void
-//     */
-//    private void createOrUpdateUserRepos(User u, List<Repository> repositories,Key userKey) {
-//        List<Entity> repoEntities = new ArrayList<Entity>();
-//        for(Repository repo: repositories){
-//            Entity entity = new Entity("Repository",repo.getId(),userKey);
-//            repoEntities.add(entity);
-//        }
-//        datastore.put(repoEntities);
-//    }
-
     /** 
      * Description: Create/Update user
      * @param model
@@ -88,11 +73,11 @@ public class AuthResource {
      * void
      */
     private void createOrUpdateUser(OAuthTokenModel model, User u) {
-        Key userKey = KeyFactory.createKey("User", u.getId());
+        Key userKey = KeyFactory.createKey("User",u.getLogin());
         Entity result = DatastoreUtils.getOneResultByKey(datastore, userKey);
         // User exists
         if (result == null) {
-            result = new Entity("User", u.getId());
+            result = new Entity("User", u.getLogin());
         }
         // Not exist before, create
         

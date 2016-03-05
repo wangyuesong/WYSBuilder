@@ -33,7 +33,9 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
+import wys.resource.UsersResource.RepositoryModel;
 import wys.utils.DatastoreUtils;
+import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -46,6 +48,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.appengine.repackaged.org.apache.commons.httpclient.UsernamePasswordCredentials;
 
 /**
  * @Project: wysbuilder
@@ -70,57 +73,14 @@ public class RepoResource {
     public RepoResource(String userLogin) {
         super();
         gitClient = new GitHubClient();
+        System.out.println(userLogin);
         datastore = DatastoreServiceFactory.getDatastoreService();
         syncCache = MemcacheServiceFactory.getMemcacheService();
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
-        // System.err.println("Fuck");
         this.userLogin = userLogin;
     }
-
-    public RepoResource() {
-        super();
-    }
-
-    /**
-     * 
-     * Description: List all repositories of a user (from db/memecache)
-     * 
-     * @param headerToken
-     * @return
-     *         Response
-     */
-    @GET
-    @Produces("application/json")
-    public Response getAllRepos(@HeaderParam("Authentication") String headerToken) {
-        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-        gitClient.setOAuth2Token(headerToken);
-
-        // Repo cache key
-        String reposCacheKey = DatastoreUtils.getUserReposCacheKey(userLogin);
-        Object cacheResult = syncCache.get(reposCacheKey);
-        if (cacheResult != null) {
-            return Response.ok().entity(cacheResult).build();
-        }
-
-        Key k = KeyFactory.createKey("User", userLogin);
-        Query query = new Query("Repository").setAncestor(k);
-        List<Entity> entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-        List<RepositoryModel> models = new ArrayList<RepoResource.RepositoryModel>();
-        for (Entity e : entities) {
-            RepositoryModel r = new RepositoryModel();
-            convertEntityToModel(e, r);
-            models.add(r);
-        }
-        GenericEntity<List<RepositoryModel>> genericModels =
-                new GenericEntity<List<RepositoryModel>>(models) {
-                };
-
-        return Response.ok().entity(genericModels).build();
-    }
-
+   
     /**
      * 
      * Description: Get a repository
@@ -151,12 +111,12 @@ public class RepoResource {
 
         Entity entity = datastore.get(childKey);
         RepositoryModel r = new RepositoryModel();
-        convertEntityToModel(entity, r);
+        EntityToViewModelUtils.convertEntityToRepoModel(entity, r);
         return Response.ok().entity(r).build();
     }
 
     @POST
-    @Path("{repoId}/addHook")
+    @Path("{repoName}/addHook")
     public Response addWebhook(@Context HttpServletRequest request,
             @HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
             throws EntityNotFoundException, IOException {
@@ -177,19 +137,6 @@ public class RepoResource {
         String hookUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
                 request.getRequestURI().replace("addHook", "hookReceiver");
         Client client = ClientBuilder.newClient();
-        // JSONObject obj = new JSONObject();
-        // JSONObject configObject = new JSONObject();
-        // try {
-        // obj.put("name", "web");
-        // obj.put("active", true);
-        // obj.put("events", new String[] { "push", "pull_request" });
-        // configObject.put("url", hookUrl);
-        // configObject.put("content_type", "json");
-        // obj.put("config", configObject);
-        // } catch (JSONException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
         User user = userService.getUser();
         HashMap<String, Object> paraMap = new HashMap<String, Object>();
         paraMap.put("name", "web");
@@ -199,179 +146,29 @@ public class RepoResource {
         innerParaHashMap.put("url", hookUrl);
         innerParaHashMap.put("content_type", "json");
         paraMap.put("config", innerParaHashMap);
-        // ObjectWriter ow = new ObjectMapper().writer();
-        // String json = ow.writeValueAsString(paraMap);
-        // System.out.println(json);
         WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName()
                 + "/hooks");
         Response r = target.request(MediaType.APPLICATION_JSON).
                 header("Authorization", String.format("Bearer %s", headerToken))
                 .post(javax.ws.rs.client.Entity.entity(paraMap, MediaType.APPLICATION_JSON), Response.class);
-        System.out.println("Url:" + GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName() + "/hooks");
-        System.out.println("Status:" + r.getStatus());
         // GitHubResponse respone = gitClient.post(uri, params, new HashedMap().getClass().getT)
-        return Response.ok().build();
+
+        return Response.ok().entity("Web hook added").build();
     }
 
     @POST
-    @Path("{repoId}/hookReceiver")
+    @Path("{repoName}/hookReceiver")
     @Produces("application/json")
     public Response receiveHook() {
         System.out.println("Hook received");
         return Response.ok().build();
     }
 
-    /**
-     * 
-     * Description: Update a user repo from GithubAPI
-     * 
-     * @param headerToken
-     * @return
-     * @throws IOException
-     *             Response
-     */
-    @PUT
-    public Response syncRepos(@HeaderParam("Authentication") String headerToken) throws IOException {
-        if (!HeaderUtils.checkHeader(headerToken, userId)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-        gitClient.setOAuth2Token(headerToken);
-        List<Repository> repos = repositoryService.getRepositories();
-        for (Repository r : repos) {
-            Key parentKey = KeyFactory.createKey("User", userId);
-            Key childKey = KeyFactory.createKey(parentKey, "Repository", r.getId());
-            Entity e = new Entity(childKey);
-            convertGithubModelToEntity(r, e);
-            datastore.put(e);
-            // Invalidate cache
-        }
-        syncCache.delete(DatastoreUtils.getUserReposCacheKey(userId));
-        return Response.ok().build();
-    }
+  
 
-    /**
-     * Description: Convert GithubAPIModel to entity. Used when save.
-     * 
-     * @param r
-     * @param e
-     *            void
-     */
-    private void convertGithubModelToEntity(Repository r, Entity e) {
-        e.setProperty("repo_id", r.getId());
-        e.setProperty("name", r.getName());
-        e.setProperty("description", r.getDescription());
-        e.setProperty("git_url", r.getGitUrl());
-        e.setProperty("homepage", r.getHomepage());
-        e.setProperty("master_branch", r.getMasterBranch());
-        e.setProperty("created_at", r.getCreatedAt());
-        e.setProperty("updated_at", r.getUpdatedAt());
-    }
-
-    /**
-     * 
-     * Description: Convert Entity to Model. Used when show
-     * 
-     * @param e
-     * @param r
-     *            void
-     */
-    private void convertEntityToModel(Entity e, RepositoryModel r) {
-        r.setRepo_id((Long) e.getProperty("repo_id"));
-        r.setName((String) e.getProperty("name"));
-        r.setDescription((String) e.getProperty("description"));
-        r.setGit_url((String) e.getProperty("git_url"));
-        r.setHomepage((String) e.getProperty("homepage"));
-        r.setMaster_branch((String) e.getProperty("master_branch"));
-        r.setCreated_at(e.getProperty("created_at") == null ? null : e.getProperty("created_at").toString());
-        r.setUpdated_at(e.getProperty("updated_at") == null ? null : e.getProperty("updated_at").toString());
-    }
-
-    /**
-     * 
-     * @Project: wysbuilder
-     * @Title: RepoResource.java
-     * @Package wys.resource
-     * @Description: Repository Model
-     * @author YuesongWang
-     * @date Mar 2, 2016 1:38:19 AM
-     * @version V1.0
-     */
-    @XmlRootElement
-    public static class RepositoryModel {
-        private long repo_id;
-        private String name;
-        private String description;
-        private String git_url;
-        private String homepage;
-        private String master_branch;
-        private String created_at;
-        private String updated_at;
-
-        public long getRepo_id() {
-            return repo_id;
-        }
-
-        public void setRepo_id(long repo_id) {
-            this.repo_id = repo_id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public String getGit_url() {
-            return git_url;
-        }
-
-        public void setGit_url(String git_url) {
-            this.git_url = git_url;
-        }
-
-        public String getHomepage() {
-            return homepage;
-        }
-
-        public void setHomepage(String homepage) {
-            this.homepage = homepage;
-        }
-
-        public String getMaster_branch() {
-            return master_branch;
-        }
-
-        public void setMaster_branch(String master_branch) {
-            this.master_branch = master_branch;
-        }
-
-        public String getCreated_at() {
-            return created_at;
-        }
-
-        public void setCreated_at(String created_at) {
-            this.created_at = created_at;
-        }
-
-        public String getUpdated_at() {
-            return updated_at;
-        }
-
-        public void setUpdated_at(String updated_at) {
-            this.updated_at = updated_at;
-        }
-
-    }
+   
+ 
+  
 
     @XmlRootElement
     public static class SetHookModel {
