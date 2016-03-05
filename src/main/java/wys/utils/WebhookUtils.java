@@ -65,7 +65,7 @@ public class WebhookUtils {
      *         Response
      */
 
-    public static Response deleteWebhook(String oauthToken, String userLogin, String repoName, int hookId) {
+    public static Response deleteWebhook(String oauthToken, String userLogin, String repoName, String hookId) {
 
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + userLogin + "/" + repoName

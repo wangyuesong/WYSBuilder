@@ -1,5 +1,6 @@
 package wys.resource;
 
+
 import java.io.IOException;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.sun.istack.logging.Logger;
 
 /**
  * @Project: wysbuilder
@@ -57,6 +59,8 @@ public class RepoResource {
     GitHubClient gitClient;
     RepositoryService repositoryService;
     UserService userService;
+    
+    private static Logger logger = Logger.getLogger(RepoResource.class);
 
     public RepoResource(String userLogin) {
         super();
@@ -153,6 +157,7 @@ public class RepoResource {
         datastore.put(entity);
         // Invalidate cache
         syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
+        logger.info(userLogin  +"/" + repoName + "add hook");
         return Response.ok().entity("Webhook added").build();
     }
 
@@ -171,6 +176,7 @@ public class RepoResource {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+        
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
         Entity entity = datastore.get(childKey);
@@ -178,12 +184,14 @@ public class RepoResource {
         if(object == null)
             return Response.status(400).entity("No hook existed").build();
         EmbeddedEntity e = (EmbeddedEntity)object;
-        int hookId = (Integer)e.getProperty("id");
+        String hookId = (String)e.getProperty("id");
         WebhookUtils.deleteWebhook(headerToken, userLogin, repoName, hookId);
         entity.removeProperty("hook");
+        datastore.put(entity);
+        
         // Invalidate cache
         syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        
+        logger.info(userLogin  +"/" + repoName + "delete hook");
         return Response.ok().entity("Webhook deleted").build();
     }
 

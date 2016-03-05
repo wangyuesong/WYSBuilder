@@ -41,7 +41,6 @@ public class GithubModelToEntityUtils {
         e.setProperty("ping_url", r.getPing_url());
         e.setProperty("updated_at", r.getUpdated_at());
         e.setProperty("test_url", r.getTest_url());
-        e.setProperty("events", r.getEvents());
         e.setProperty("name", r.getName());
         e.setProperty("created_at", r.getCreated_at());
         e.setProperty("config_content_type", r.getConfig().getContent_type());
