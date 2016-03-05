@@ -3,6 +3,9 @@ package wys.utils;
 
 import org.eclipse.egit.github.core.Repository;
 
+import wys.utils.WebhookUtils.AddhookResponse;
+
+import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
 
 /**  
@@ -31,6 +34,20 @@ public class GithubModelToEntityUtils {
         e.setProperty("master_branch", r.getMasterBranch());
         e.setProperty("created_at", r.getCreatedAt());
         e.setProperty("updated_at", r.getUpdatedAt());
+    }
+    
+    public static void convertAddhookResponseModelToEntity(AddhookResponse r, EmbeddedEntity e){
+        e.setProperty("id", r.getId());
+        e.setProperty("ping_url", r.getPing_url());
+        e.setProperty("updated_at", r.getUpdated_at());
+        e.setProperty("test_url", r.getTest_url());
+        e.setProperty("events", r.getEvents());
+        e.setProperty("name", r.getName());
+        e.setProperty("created_at", r.getCreated_at());
+        e.setProperty("config_content_type", r.getConfig().getContent_type());
+        e.setProperty("config_url", r.getConfig().getUrl());
+        e.setProperty("active", r.getActive());
+        e.setProperty("url", r.getUrl());
     }
 
 }

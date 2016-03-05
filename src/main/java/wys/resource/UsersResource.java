@@ -158,6 +158,15 @@ public class UsersResource {
         private String master_branch;
         private String created_at;
         private String updated_at;
+        private boolean is_hooked;
+
+        public boolean isIs_hooked() {
+            return is_hooked;
+        }
+
+        public void setIs_hooked(boolean is_hooked) {
+            this.is_hooked = is_hooked;
+        }
 
         public long getRepo_id() {
             return repo_id;

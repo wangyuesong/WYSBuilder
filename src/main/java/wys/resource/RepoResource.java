@@ -1,32 +1,20 @@
 package wys.resource;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.GenericEntity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -36,19 +24,20 @@ import org.eclipse.egit.github.core.service.UserService;
 import wys.resource.UsersResource.RepositoryModel;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
+import wys.utils.GithubModelToEntityUtils;
 import wys.utils.HeaderUtils;
+import wys.utils.WebhookUtils;
+import wys.utils.WebhookUtils.AddhookResponse;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.repackaged.org.apache.commons.httpclient.UsernamePasswordCredentials;
 
 /**
  * @Project: wysbuilder
@@ -68,7 +57,6 @@ public class RepoResource {
     GitHubClient gitClient;
     RepositoryService repositoryService;
     UserService userService;
-    public final static String GITHUB_API_ENDPOINT = "https://api.github.com/";
 
     public RepoResource(String userLogin) {
         super();
@@ -80,7 +68,7 @@ public class RepoResource {
         userService = new UserService(gitClient);
         this.userLogin = userLogin;
     }
-   
+
     /**
      * 
      * Description: Get a repository
@@ -115,8 +103,21 @@ public class RepoResource {
         return Response.ok().entity(r).build();
     }
 
+    /**
+     * 
+     * Description: Add webhook to github. Update Repository model to have hook info.
+     * 
+     * @param request
+     * @param headerToken
+     * @param repoName
+     * @return
+     * @throws EntityNotFoundException
+     * @throws IOException
+     *             Response
+     */
+
     @POST
-    @Path("{repoName}/addHook")
+    @Path("{repoName}/hook")
     public Response addWebhook(@Context HttpServletRequest request,
             @HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
             throws EntityNotFoundException, IOException {
@@ -124,36 +125,66 @@ public class RepoResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
-       
         Repository repo = null;
         List<Repository> repos = repositoryService.getRepositories();
         for (Repository r : repos) {
             if (r.getName().equals(repoName))
                 repo = r;
         }
-        if(repo == null)
+        if (repo == null)
             return Response.status(400).entity("No such repository").build();
-
-        String hookUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-                request.getRequestURI().replace("addHook", "hookReceiver");
-        Client client = ClientBuilder.newClient();
         User user = userService.getUser();
-        HashMap<String, Object> paraMap = new HashMap<String, Object>();
-        paraMap.put("name", "web");
-        paraMap.put("active", Boolean.TRUE);
-        paraMap.put("events", new String[] { "push", "pull_request" });
-        HashMap<String, Object> innerParaHashMap = new HashMap<String, Object>();
-        innerParaHashMap.put("url", hookUrl);
-        innerParaHashMap.put("content_type", "json");
-        paraMap.put("config", innerParaHashMap);
-        WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName()
-                + "/hooks");
-        Response r = target.request(MediaType.APPLICATION_JSON).
-                header("Authorization", String.format("Bearer %s", headerToken))
-                .post(javax.ws.rs.client.Entity.entity(paraMap, MediaType.APPLICATION_JSON), Response.class);
-        // GitHubResponse respone = gitClient.post(uri, params, new HashedMap().getClass().getT)
+        String userLogin = user.getLogin();
 
-        return Response.ok().entity("Web hook added").build();
+        // Call Github Webhook API to add hook
+        // FIXME Need refactor
+        
+        String hookReceiverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
+                request.getRequestURI().replace("hook", "hookReceiver");
+        AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
+
+        // Receive response and save it to Repository model in datastore
+        EmbeddedEntity hookEntity = new EmbeddedEntity();
+        GithubModelToEntityUtils.convertAddhookResponseModelToEntity(hookResponse, hookEntity);
+        Key parentKey = KeyFactory.createKey("User", userLogin);
+        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
+        Entity entity = datastore.get(childKey);
+        entity.setProperty("hook", hookEntity);
+        datastore.put(entity);
+        // Invalidate cache
+        syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
+        return Response.ok().entity("Webhook added").build();
+    }
+
+    /**
+     * 
+     * Description: Delete a webhook
+     * @param headerToken
+     * @param repoName
+     * @return
+     * @throws EntityNotFoundException
+     * Response
+     */
+    @DELETE
+    @Path("{repoName}/hook")
+    public Response deleteWebhook(@HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName) throws EntityNotFoundException {
+        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        Key parentKey = KeyFactory.createKey("User", userLogin);
+        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
+        Entity entity = datastore.get(childKey);
+        Object object = entity.getProperty("hook");
+        if(object == null)
+            return Response.status(400).entity("No hook existed").build();
+        EmbeddedEntity e = (EmbeddedEntity)object;
+        int hookId = (Integer)e.getProperty("id");
+        WebhookUtils.deleteWebhook(headerToken, userLogin, repoName, hookId);
+        entity.removeProperty("hook");
+        // Invalidate cache
+        syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
+        
+        return Response.ok().entity("Webhook deleted").build();
     }
 
     @POST
@@ -163,12 +194,6 @@ public class RepoResource {
         System.out.println("Hook received");
         return Response.ok().build();
     }
-
-  
-
-   
- 
-  
 
     @XmlRootElement
     public static class SetHookModel {

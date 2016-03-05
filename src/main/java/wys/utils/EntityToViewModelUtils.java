@@ -17,7 +17,7 @@ import com.google.appengine.api.datastore.Entity;
 public class EntityToViewModelUtils {
     /**
      * 
-     * Description: Convert Entity to Model. Used when show
+     * Description: Convert GithubEntity to Model. Used when show
      * 
      * @param e
      * @param r
@@ -32,6 +32,7 @@ public class EntityToViewModelUtils {
         r.setMaster_branch((String) e.getProperty("master_branch"));
         r.setCreated_at(e.getProperty("created_at") == null ? null : e.getProperty("created_at").toString());
         r.setUpdated_at(e.getProperty("updated_at") == null ? null : e.getProperty("updated_at").toString());
+        r.setIs_hooked(e.getProperty("hook") == null ? false: true);
     }
 
 }
