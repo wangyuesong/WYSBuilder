@@ -47,23 +47,15 @@ public class DatastoreUtils{
     }
     
     
-    public static String getUserReposCacheKey(long userId){
-        return userId + "_repos";
+    public static String getUserReposCacheKey(String userLogin){
+        return userLogin + "_repos";
     }
     
-    public static String getUserOneRepoCacheKey(long userId, long repoId){
-        return userId + "_" + repoId + "_repo";
+    public static String getUserOneRepoCacheKey(String userLogin, String repoName){
+        return userLogin + "_" + repoName + "_repo";
     }
     
-    public static Repository getRepositoryByUserIdAndRepoId(RepositoryService repositoryService, long repoId) throws IOException{
-        List<Repository> repos = repositoryService.getRepositories();
-        for(Repository r : repos){
-            if(r.getId() == repoId)
-               return r;
-        }
-       return null;
-    }
-//    public Entity injectPojoToDatastoreEntity(T pojo, Entity entity){
+  //    public Entity injectPojoToDatastoreEntity(T pojo, Entity entity){
 //        Field[] fields = pojo.getClass().get
 //        for(Field f : fields){
 //            pojo.getClass().getMe

@@ -1,6 +1,7 @@
 package wys.resource;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +16,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.egit.github.core.Repository;
@@ -28,9 +32,7 @@ import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
-import org.glassfish.jersey.client.ClientConfig;
 
-import wys.resource.RepoResource.SetHookModel.SetHookModelConfig;
 import wys.utils.DatastoreUtils;
 import wys.utils.HeaderUtils;
 
@@ -56,7 +58,7 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
  */
 public class RepoResource {
 
-    long userId;
+    String userLogin;
     // Client client = ClientBuilder.newClient();
     DatastoreService datastore;
     MemcacheService syncCache;
@@ -65,7 +67,7 @@ public class RepoResource {
     UserService userService;
     public final static String GITHUB_API_ENDPOINT = "https://api.github.com/";
 
-    public RepoResource(long userId) {
+    public RepoResource(String userLogin) {
         super();
         gitClient = new GitHubClient();
         datastore = DatastoreServiceFactory.getDatastoreService();
@@ -73,7 +75,7 @@ public class RepoResource {
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
         // System.err.println("Fuck");
-        this.userId = userId;
+        this.userLogin = userLogin;
     }
 
     public RepoResource() {
@@ -91,19 +93,19 @@ public class RepoResource {
     @GET
     @Produces("application/json")
     public Response getAllRepos(@HeaderParam("Authentication") String headerToken) {
-        if (!HeaderUtils.checkHeader(headerToken, userId)) {
+        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
 
         // Repo cache key
-        String reposCacheKey = DatastoreUtils.getUserReposCacheKey(userId);
+        String reposCacheKey = DatastoreUtils.getUserReposCacheKey(userLogin);
         Object cacheResult = syncCache.get(reposCacheKey);
         if (cacheResult != null) {
             return Response.ok().entity(cacheResult).build();
         }
 
-        Key k = KeyFactory.createKey("User", userId);
+        Key k = KeyFactory.createKey("User", userLogin);
         Query query = new Query("Repository").setAncestor(k);
         List<Entity> entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
         List<RepositoryModel> models = new ArrayList<RepoResource.RepositoryModel>();
@@ -130,22 +132,22 @@ public class RepoResource {
      * @throws EntityNotFoundException
      */
     @GET
-    @Path("{repoId}")
+    @Path("{repoName}")
     @Produces("application/json")
-    public Response getOneRepo(@HeaderParam("Authentication") String headerToken, @PathParam("repoId") long repoId)
+    public Response getOneRepo(@HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
             throws EntityNotFoundException {
-        if (!HeaderUtils.checkHeader(headerToken, userId)) {
+        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
 
-        String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userId, repoId);
+        String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName);
         Object cacheResult = syncCache.get(reposCacheKey);
         if (cacheResult != null) {
             return Response.ok().entity(cacheResult).build();
         }
-        Key parentKey = KeyFactory.createKey("User", userId);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoId);
+        Key parentKey = KeyFactory.createKey("User", userLogin);
+        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
 
         Entity entity = datastore.get(childKey);
         RepositoryModel r = new RepositoryModel();
@@ -156,36 +158,56 @@ public class RepoResource {
     @POST
     @Path("{repoId}/addHook")
     public Response addWebhook(@Context HttpServletRequest request,
-            @HeaderParam("Authentication") String headerToken, @PathParam("repoId") long repoId)
+            @HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
             throws EntityNotFoundException, IOException {
-//        if (!HeaderUtils.checkHeader(headerToken, userId)) {
-//            return Response.status(Response.Status.UNAUTHORIZED).build();
-//        }
-        gitClient.setOAuth2Token(headerToken);
-        User user = userService.getUser();
-        Repository repo = DatastoreUtils.getRepositoryByUserIdAndRepoId(repositoryService, repoId);
-        String hookUrl = request.getRequestURI().replace("addHook", "hookReceiver");
-        Client client = ClientBuilder.newClient();
-        JSONObject obj = new JSONObject();
-        JSONObject configObject = new JSONObject();
-        try {
-            obj.put("name", "Testhook");
-            obj.put("active", true);
-            obj.put("events", new String[] { "push", "pull_request" });
-            configObject.put("url", hookUrl);
-            configObject.put("content_type", "json");
-            obj.put("config", configObject);
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+        gitClient.setOAuth2Token(headerToken);
        
-        Response r = client.target(GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName() + "/hooks").
-                request(MediaType.APPLICATION_JSON).
-                accept(MediaType.APPLICATION_JSON).
+        Repository repo = null;
+        List<Repository> repos = repositoryService.getRepositories();
+        for (Repository r : repos) {
+            if (r.getName().equals(repoName))
+                repo = r;
+        }
+        if(repo == null)
+            return Response.status(400).entity("No such repository").build();
+
+        String hookUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
+                request.getRequestURI().replace("addHook", "hookReceiver");
+        Client client = ClientBuilder.newClient();
+        // JSONObject obj = new JSONObject();
+        // JSONObject configObject = new JSONObject();
+        // try {
+        // obj.put("name", "web");
+        // obj.put("active", true);
+        // obj.put("events", new String[] { "push", "pull_request" });
+        // configObject.put("url", hookUrl);
+        // configObject.put("content_type", "json");
+        // obj.put("config", configObject);
+        // } catch (JSONException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
+        User user = userService.getUser();
+        HashMap<String, Object> paraMap = new HashMap<String, Object>();
+        paraMap.put("name", "web");
+        paraMap.put("active", Boolean.TRUE);
+        paraMap.put("events", new String[] { "push", "pull_request" });
+        HashMap<String, Object> innerParaHashMap = new HashMap<String, Object>();
+        innerParaHashMap.put("url", hookUrl);
+        innerParaHashMap.put("content_type", "json");
+        paraMap.put("config", innerParaHashMap);
+        // ObjectWriter ow = new ObjectMapper().writer();
+        // String json = ow.writeValueAsString(paraMap);
+        // System.out.println(json);
+        WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName()
+                + "/hooks");
+        Response r = target.request(MediaType.APPLICATION_JSON).
                 header("Authorization", String.format("Bearer %s", headerToken))
-                .post(javax.ws.rs.client.Entity.entity(obj, MediaType.APPLICATION_JSON));
-        System.out.println("Url:" + GITHUB_API_ENDPOINT + "repos/" + user.getName() + "/" + repo.getName() + "/hooks");
+                .post(javax.ws.rs.client.Entity.entity(paraMap, MediaType.APPLICATION_JSON), Response.class);
+        System.out.println("Url:" + GITHUB_API_ENDPOINT + "repos/" + user.getLogin() + "/" + repo.getName() + "/hooks");
         System.out.println("Status:" + r.getStatus());
         // GitHubResponse respone = gitClient.post(uri, params, new HashedMap().getClass().getT)
         return Response.ok().build();

@@ -32,10 +32,10 @@ public class HeaderUtils {
      */
     static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     
-    public static boolean checkHeader(String headerToken, long id){
+    public static boolean checkHeader(String headerToken, String userLogin){
         if(headerToken == null || headerToken == "")
             return false;
-        Key userKey = KeyFactory.createKey("User", id);
+        Key userKey = KeyFactory.createKey("User", userLogin);
         Entity e = DatastoreUtils.getOneResultByKey(datastore, userKey);
         if(e == null){
             return false;
