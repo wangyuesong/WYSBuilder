@@ -21,7 +21,6 @@ import wys.resource.RepoResource;
  * @version V1.0
  */
 public class WebhookUtils {
-    public final static String GITHUB_API_ENDPOINT = "https://api.github.com/";
 
     /**
      * Description: Stupid method to create webhook
@@ -44,7 +43,7 @@ public class WebhookUtils {
         innerParaHashMap.put("url", hookReceiverUrl);
         innerParaHashMap.put("content_type", "json");
         paraMap.put("config", innerParaHashMap);
-        WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + userLogin + "/" + repoName
+        WebTarget target = client.target(Constants.GITHUB_API_ENDPOINT + "repos/" + userLogin + "/" + repoName
                 + "/hooks");
         AddhookResponse r = target.request(MediaType.APPLICATION_JSON).
                 header("Authorization", String.format("Bearer %s", oauthToken))
@@ -68,7 +67,7 @@ public class WebhookUtils {
     public static Response deleteWebhook(String oauthToken, String userLogin, String repoName, String hookId) {
 
         Client client = ClientBuilder.newClient();
-        WebTarget target = client.target(GITHUB_API_ENDPOINT + "repos/" + userLogin + "/" + repoName
+        WebTarget target = client.target(Constants.GITHUB_API_ENDPOINT + "repos/" + userLogin + "/" + repoName
                 + "/hooks/" + hookId);
         Response r = target.request(MediaType.APPLICATION_JSON).
                 header("Authorization", String.format("Bearer %s", oauthToken))

@@ -60,7 +60,6 @@ public class HookResource {
     public HookResource(String userLogin, String repoName) {
         super();
         gitClient = new GitHubClient();
-        System.out.println(userLogin);
         datastore = DatastoreServiceFactory.getDatastoreService();
         syncCache = MemcacheServiceFactory.getMemcacheService();
         repositoryService = new RepositoryService(gitClient);
@@ -116,9 +115,12 @@ public class HookResource {
         Entity entity = datastore.get(childKey);
         entity.setProperty("hook", hookEntity);
         datastore.put(entity);
+
+        logger.info("Hook added for" + userLogin + "/" + repoName);
         // Invalidate cache
         syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        logger.info(userLogin + "/" + repoName + "add hook");
+        syncCache.delete(DatastoreUtils.getUserReposCacheKey(userLogin));
+
         return Response.ok().entity("Webhook added").build();
     }
 
@@ -153,7 +155,10 @@ public class HookResource {
 
         // Invalidate cache
         syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        logger.info(userLogin + "/" + repoName + "delete hook");
+        syncCache.delete(DatastoreUtils.getUserReposCacheKey(userLogin));
+        
+        logger.info("Hook deleted for" + userLogin + "/" + repoName);
+
         return Response.ok().entity("Webhook deleted").build();
     }
 

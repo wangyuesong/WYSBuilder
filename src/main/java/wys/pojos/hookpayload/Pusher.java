@@ -15,79 +15,56 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "code",
-    "status",
-    "message"
+    "name",
+    "email"
 })
-public class LastResponse {
+public class Pusher {
 
-    @JsonProperty("code")
-    private Object code;
-    @JsonProperty("status")
-    private String status;
-    @JsonProperty("message")
-    private Object message;
+    @JsonProperty("name")
+    private String name;
+    @JsonProperty("email")
+    private String email;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 
      * @return
-     *     The code
+     *     The name
      */
-    @JsonProperty("code")
-    public Object getCode() {
-        return code;
+    @JsonProperty("name")
+    public String getName() {
+        return name;
     }
 
     /**
      * 
-     * @param code
-     *     The code
+     * @param name
+     *     The name
      */
-    @JsonProperty("code")
-    public void setCode(Object code) {
-        this.code = code;
-    }
-
-    /**
-     * 
-     * @return
-     *     The status
-     */
-    @JsonProperty("status")
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * 
-     * @param status
-     *     The status
-     */
-    @JsonProperty("status")
-    public void setStatus(String status) {
-        this.status = status;
+    @JsonProperty("name")
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
      * 
      * @return
-     *     The message
+     *     The email
      */
-    @JsonProperty("message")
-    public Object getMessage() {
-        return message;
+    @JsonProperty("email")
+    public String getEmail() {
+        return email;
     }
 
     /**
      * 
-     * @param message
-     *     The message
+     * @param email
+     *     The email
      */
-    @JsonProperty("message")
-    public void setMessage(Object message) {
-        this.message = message;
+    @JsonProperty("email")
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override

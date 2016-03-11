@@ -15,56 +15,79 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "content_type",
-    "url"
+    "name",
+    "email",
+    "username"
 })
-public class Config {
+public class Author_ {
 
-    @JsonProperty("content_type")
-    private String contentType;
-    @JsonProperty("url")
-    private String url;
+    @JsonProperty("name")
+    private String name;
+    @JsonProperty("email")
+    private String email;
+    @JsonProperty("username")
+    private String username;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 
      * @return
-     *     The contentType
+     *     The name
      */
-    @JsonProperty("content_type")
-    public String getContentType() {
-        return contentType;
+    @JsonProperty("name")
+    public String getName() {
+        return name;
     }
 
     /**
      * 
-     * @param contentType
-     *     The content_type
+     * @param name
+     *     The name
      */
-    @JsonProperty("content_type")
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
+    @JsonProperty("name")
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
      * 
      * @return
-     *     The url
+     *     The email
      */
-    @JsonProperty("url")
-    public String getUrl() {
-        return url;
+    @JsonProperty("email")
+    public String getEmail() {
+        return email;
     }
 
     /**
      * 
-     * @param url
-     *     The url
+     * @param email
+     *     The email
      */
-    @JsonProperty("url")
-    public void setUrl(String url) {
-        this.url = url;
+    @JsonProperty("email")
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * 
+     * @return
+     *     The username
+     */
+    @JsonProperty("username")
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * 
+     * @param username
+     *     The username
+     */
+    @JsonProperty("username")
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

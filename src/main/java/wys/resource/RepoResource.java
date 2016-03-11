@@ -1,37 +1,32 @@
 package wys.resource;
 
-import java.io.IOException;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlRootElement;
 
-import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
+import wys.pojos.hookpayload.HookPayload;
 import wys.resource.UsersResource.RepositoryModel;
+import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
-import wys.utils.GithubModelToEntityUtils;
 import wys.utils.HeaderUtils;
-import wys.utils.WebhookUtils;
-import wys.utils.WebhookUtils.AddhookResponse;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
@@ -58,17 +53,19 @@ public class RepoResource {
     GitHubClient gitClient;
     RepositoryService repositoryService;
     UserService userService;
+    Client client;
 
     private static Logger logger = Logger.getLogger(RepoResource.class);
 
     public RepoResource(String userLogin) {
         super();
         gitClient = new GitHubClient();
-        System.out.println(userLogin);
         datastore = DatastoreServiceFactory.getDatastoreService();
         syncCache = MemcacheServiceFactory.getMemcacheService();
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
+        client = ClientBuilder.newClient();
+
         this.userLogin = userLogin;
     }
 
@@ -109,8 +106,6 @@ public class RepoResource {
         RepositoryModel r = new RepositoryModel();
         EntityToViewModelUtils.convertEntityToRepoModel(entity, r);
 
-       
-
         return Response.ok().entity(r).build();
     }
 
@@ -126,8 +121,7 @@ public class RepoResource {
     public HookResource getHook(@PathParam("repoName") String repoName) {
         return new HookResource(userLogin, repoName);
     }
-    
-    
+
     /**
      * 
      * Description: Sub-resource for handling branches related request
@@ -140,16 +134,39 @@ public class RepoResource {
     public BranchResource getBranches(@PathParam("repoName") String repoName) {
         return new BranchResource(userLogin, repoName);
     }
-    
+
+    /**
+     * 
+     * Description: Sub-resource for handling builds related request
+     * 
+     * @param userLogin
+     * @return
+     *         RepoResource
+     */
+    @Path("/{repoName}/builds")
+    public BuildResource getBuilds(@PathParam("repoName") String repoName) {
+        return new BuildResource(userLogin, repoName);
+    }
 
     @POST
     @Path("{repoName}/hookReceiver")
     @Produces("application/json")
-    public Response receiveHook() {
-        System.out.println("Hook received");
+    public Response receiveHook(@HeaderParam("Authentication") String headerToken,
+            @PathParam("repoName") String repoName, @Context HttpServletRequest request,
+            HookPayload payload) {
+        logger.info("Request received");
+        WebTarget target = client.target(Constants.SERVER_BASE_URI);
+        try {
+            Response response = target
+                    .path("rest").path(userLogin).path(repoName).path("builds")
+                    .request(MediaType.APPLICATION_JSON).header("Authentication", headerToken)
+                    .post(javax.ws.rs.client.Entity.entity(payload, MediaType.APPLICATION_JSON));
+        }
+        // FIXME Github api inconsistency
+        catch (Exception e) {
+            logger.info("Receive hook test message");
+            return Response.ok().build();
+        }
         return Response.ok().build();
     }
-
-   
-
 }

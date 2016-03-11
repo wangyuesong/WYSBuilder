@@ -1,4 +1,3 @@
-
 package wys.pojos.hookpayload;
 
 import java.util.HashMap;
@@ -15,79 +14,81 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "id",
-    "name",
-    "full_name",
-    "owner",
-    "private",
-    "html_url",
-    "description",
-    "fork",
-    "url",
-    "forks_url",
-    "keys_url",
-    "collaborators_url",
-    "teams_url",
-    "hooks_url",
-    "issue_events_url",
-    "events_url",
-    "assignees_url",
-    "branches_url",
-    "tags_url",
-    "blobs_url",
-    "git_tags_url",
-    "git_refs_url",
-    "trees_url",
-    "statuses_url",
-    "languages_url",
-    "stargazers_url",
-    "contributors_url",
-    "subscribers_url",
-    "subscription_url",
-    "commits_url",
-    "git_commits_url",
-    "comments_url",
-    "issue_comment_url",
-    "contents_url",
-    "compare_url",
-    "merges_url",
-    "archive_url",
-    "downloads_url",
-    "issues_url",
-    "pulls_url",
-    "milestones_url",
-    "notifications_url",
-    "labels_url",
-    "releases_url",
-    "deployments_url",
-    "created_at",
-    "updated_at",
-    "pushed_at",
-    "git_url",
-    "ssh_url",
-    "clone_url",
-    "svn_url",
-    "homepage",
-    "size",
-    "stargazers_count",
-    "watchers_count",
-    "language",
-    "has_issues",
-    "has_downloads",
-    "has_wiki",
-    "has_pages",
-    "forks_count",
-    "mirror_url",
-    "open_issues_count",
-    "forks",
-    "open_issues",
-    "watchers",
-    "default_branch"
+        "id",
+        "name",
+        "full_name",
+        "owner",
+        "private",
+        "html_url",
+        "description",
+        "fork",
+        "url",
+        "forks_url",
+        "keys_url",
+        "collaborators_url",
+        "teams_url",
+        "hooks_url",
+        "issue_events_url",
+        "events_url",
+        "assignees_url",
+        "branches_url",
+        "tags_url",
+        "blobs_url",
+        "git_tags_url",
+        "git_refs_url",
+        "trees_url",
+        "statuses_url",
+        "languages_url",
+        "stargazers_url",
+        "contributors_url",
+        "subscribers_url",
+        "subscription_url",
+        "commits_url",
+        "git_commits_url",
+        "comments_url",
+        "issue_comment_url",
+        "contents_url",
+        "compare_url",
+        "merges_url",
+        "archive_url",
+        "downloads_url",
+        "issues_url",
+        "pulls_url",
+        "milestones_url",
+        "notifications_url",
+        "labels_url",
+        "releases_url",
+        "deployments_url",
+        "created_at",
+        "updated_at",
+        "pushed_at",
+        "git_url",
+        "ssh_url",
+        "clone_url",
+        "svn_url",
+        "homepage",
+        "size",
+        "stargazers_count",
+        "watchers_count",
+        "language",
+        "has_issues",
+        "has_downloads",
+        "has_wiki",
+        "has_pages",
+        "forks_count",
+        "mirror_url",
+        "open_issues_count",
+        "forks",
+        "open_issues",
+        "watchers",
+        "default_branch",
+        "stargazers",
+        "master_branch"
 })
 public class Repository {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("full_name")
@@ -177,11 +178,11 @@ public class Repository {
     @JsonProperty("deployments_url")
     private String deploymentsUrl;
     @JsonProperty("created_at")
-    private String createdAt;
+    private Long createdAt;
     @JsonProperty("updated_at")
     private String updatedAt;
     @JsonProperty("pushed_at")
-    private String pushedAt;
+    private Long pushedAt;
     @JsonProperty("git_url")
     private String gitUrl;
     @JsonProperty("ssh_url")
@@ -193,11 +194,11 @@ public class Repository {
     @JsonProperty("homepage")
     private Object homepage;
     @JsonProperty("size")
-    private Integer size;
+    private Long size;
     @JsonProperty("stargazers_count")
-    private Integer stargazersCount;
+    private Long stargazersCount;
     @JsonProperty("watchers_count")
-    private Integer watchersCount;
+    private Long watchersCount;
     @JsonProperty("language")
     private String language;
     @JsonProperty("has_issues")
@@ -209,46 +210,50 @@ public class Repository {
     @JsonProperty("has_pages")
     private Boolean hasPages;
     @JsonProperty("forks_count")
-    private Integer forksCount;
+    private Long forksCount;
     @JsonProperty("mirror_url")
     private Object mirrorUrl;
     @JsonProperty("open_issues_count")
-    private Integer openIssuesCount;
+    private Long openIssuesCount;
     @JsonProperty("forks")
-    private Integer forks;
+    private Long forks;
     @JsonProperty("open_issues")
-    private Integer openIssues;
+    private Long openIssues;
     @JsonProperty("watchers")
-    private Integer watchers;
+    private Long watchers;
     @JsonProperty("default_branch")
     private String defaultBranch;
+    @JsonProperty("stargazers")
+    private Long stargazers;
+    @JsonProperty("master_branch")
+    private String masterBranch;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 
      * @return
-     *     The id
+     *         The id
      */
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     /**
      * 
      * @param id
-     *     The id
+     *            The id
      */
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
     /**
      * 
      * @return
-     *     The name
+     *         The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -258,7 +263,7 @@ public class Repository {
     /**
      * 
      * @param name
-     *     The name
+     *            The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -268,7 +273,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The fullName
+     *         The fullName
      */
     @JsonProperty("full_name")
     public String getFullName() {
@@ -278,7 +283,7 @@ public class Repository {
     /**
      * 
      * @param fullName
-     *     The full_name
+     *            The full_name
      */
     @JsonProperty("full_name")
     public void setFullName(String fullName) {
@@ -288,7 +293,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The owner
+     *         The owner
      */
     @JsonProperty("owner")
     public Owner getOwner() {
@@ -298,7 +303,7 @@ public class Repository {
     /**
      * 
      * @param owner
-     *     The owner
+     *            The owner
      */
     @JsonProperty("owner")
     public void setOwner(Owner owner) {
@@ -308,7 +313,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The _private
+     *         The _private
      */
     @JsonProperty("private")
     public Boolean getPrivate() {
@@ -318,7 +323,7 @@ public class Repository {
     /**
      * 
      * @param _private
-     *     The private
+     *            The private
      */
     @JsonProperty("private")
     public void setPrivate(Boolean _private) {
@@ -328,7 +333,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The htmlUrl
+     *         The htmlUrl
      */
     @JsonProperty("html_url")
     public String getHtmlUrl() {
@@ -338,7 +343,7 @@ public class Repository {
     /**
      * 
      * @param htmlUrl
-     *     The html_url
+     *            The html_url
      */
     @JsonProperty("html_url")
     public void setHtmlUrl(String htmlUrl) {
@@ -348,7 +353,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The description
+     *         The description
      */
     @JsonProperty("description")
     public String getDescription() {
@@ -358,7 +363,7 @@ public class Repository {
     /**
      * 
      * @param description
-     *     The description
+     *            The description
      */
     @JsonProperty("description")
     public void setDescription(String description) {
@@ -368,7 +373,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The fork
+     *         The fork
      */
     @JsonProperty("fork")
     public Boolean getFork() {
@@ -378,7 +383,7 @@ public class Repository {
     /**
      * 
      * @param fork
-     *     The fork
+     *            The fork
      */
     @JsonProperty("fork")
     public void setFork(Boolean fork) {
@@ -388,7 +393,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The url
+     *         The url
      */
     @JsonProperty("url")
     public String getUrl() {
@@ -398,7 +403,7 @@ public class Repository {
     /**
      * 
      * @param url
-     *     The url
+     *            The url
      */
     @JsonProperty("url")
     public void setUrl(String url) {
@@ -408,7 +413,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The forksUrl
+     *         The forksUrl
      */
     @JsonProperty("forks_url")
     public String getForksUrl() {
@@ -418,7 +423,7 @@ public class Repository {
     /**
      * 
      * @param forksUrl
-     *     The forks_url
+     *            The forks_url
      */
     @JsonProperty("forks_url")
     public void setForksUrl(String forksUrl) {
@@ -428,7 +433,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The keysUrl
+     *         The keysUrl
      */
     @JsonProperty("keys_url")
     public String getKeysUrl() {
@@ -438,7 +443,7 @@ public class Repository {
     /**
      * 
      * @param keysUrl
-     *     The keys_url
+     *            The keys_url
      */
     @JsonProperty("keys_url")
     public void setKeysUrl(String keysUrl) {
@@ -448,7 +453,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The collaboratorsUrl
+     *         The collaboratorsUrl
      */
     @JsonProperty("collaborators_url")
     public String getCollaboratorsUrl() {
@@ -458,7 +463,7 @@ public class Repository {
     /**
      * 
      * @param collaboratorsUrl
-     *     The collaborators_url
+     *            The collaborators_url
      */
     @JsonProperty("collaborators_url")
     public void setCollaboratorsUrl(String collaboratorsUrl) {
@@ -468,7 +473,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The teamsUrl
+     *         The teamsUrl
      */
     @JsonProperty("teams_url")
     public String getTeamsUrl() {
@@ -478,7 +483,7 @@ public class Repository {
     /**
      * 
      * @param teamsUrl
-     *     The teams_url
+     *            The teams_url
      */
     @JsonProperty("teams_url")
     public void setTeamsUrl(String teamsUrl) {
@@ -488,7 +493,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The hooksUrl
+     *         The hooksUrl
      */
     @JsonProperty("hooks_url")
     public String getHooksUrl() {
@@ -498,7 +503,7 @@ public class Repository {
     /**
      * 
      * @param hooksUrl
-     *     The hooks_url
+     *            The hooks_url
      */
     @JsonProperty("hooks_url")
     public void setHooksUrl(String hooksUrl) {
@@ -508,7 +513,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The issueEventsUrl
+     *         The issueEventsUrl
      */
     @JsonProperty("issue_events_url")
     public String getIssueEventsUrl() {
@@ -518,7 +523,7 @@ public class Repository {
     /**
      * 
      * @param issueEventsUrl
-     *     The issue_events_url
+     *            The issue_events_url
      */
     @JsonProperty("issue_events_url")
     public void setIssueEventsUrl(String issueEventsUrl) {
@@ -528,7 +533,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The eventsUrl
+     *         The eventsUrl
      */
     @JsonProperty("events_url")
     public String getEventsUrl() {
@@ -538,7 +543,7 @@ public class Repository {
     /**
      * 
      * @param eventsUrl
-     *     The events_url
+     *            The events_url
      */
     @JsonProperty("events_url")
     public void setEventsUrl(String eventsUrl) {
@@ -548,7 +553,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The assigneesUrl
+     *         The assigneesUrl
      */
     @JsonProperty("assignees_url")
     public String getAssigneesUrl() {
@@ -558,7 +563,7 @@ public class Repository {
     /**
      * 
      * @param assigneesUrl
-     *     The assignees_url
+     *            The assignees_url
      */
     @JsonProperty("assignees_url")
     public void setAssigneesUrl(String assigneesUrl) {
@@ -568,7 +573,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The branchesUrl
+     *         The branchesUrl
      */
     @JsonProperty("branches_url")
     public String getBranchesUrl() {
@@ -578,7 +583,7 @@ public class Repository {
     /**
      * 
      * @param branchesUrl
-     *     The branches_url
+     *            The branches_url
      */
     @JsonProperty("branches_url")
     public void setBranchesUrl(String branchesUrl) {
@@ -588,7 +593,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The tagsUrl
+     *         The tagsUrl
      */
     @JsonProperty("tags_url")
     public String getTagsUrl() {
@@ -598,7 +603,7 @@ public class Repository {
     /**
      * 
      * @param tagsUrl
-     *     The tags_url
+     *            The tags_url
      */
     @JsonProperty("tags_url")
     public void setTagsUrl(String tagsUrl) {
@@ -608,7 +613,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The blobsUrl
+     *         The blobsUrl
      */
     @JsonProperty("blobs_url")
     public String getBlobsUrl() {
@@ -618,7 +623,7 @@ public class Repository {
     /**
      * 
      * @param blobsUrl
-     *     The blobs_url
+     *            The blobs_url
      */
     @JsonProperty("blobs_url")
     public void setBlobsUrl(String blobsUrl) {
@@ -628,7 +633,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The gitTagsUrl
+     *         The gitTagsUrl
      */
     @JsonProperty("git_tags_url")
     public String getGitTagsUrl() {
@@ -638,7 +643,7 @@ public class Repository {
     /**
      * 
      * @param gitTagsUrl
-     *     The git_tags_url
+     *            The git_tags_url
      */
     @JsonProperty("git_tags_url")
     public void setGitTagsUrl(String gitTagsUrl) {
@@ -648,7 +653,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The gitRefsUrl
+     *         The gitRefsUrl
      */
     @JsonProperty("git_refs_url")
     public String getGitRefsUrl() {
@@ -658,7 +663,7 @@ public class Repository {
     /**
      * 
      * @param gitRefsUrl
-     *     The git_refs_url
+     *            The git_refs_url
      */
     @JsonProperty("git_refs_url")
     public void setGitRefsUrl(String gitRefsUrl) {
@@ -668,7 +673,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The treesUrl
+     *         The treesUrl
      */
     @JsonProperty("trees_url")
     public String getTreesUrl() {
@@ -678,7 +683,7 @@ public class Repository {
     /**
      * 
      * @param treesUrl
-     *     The trees_url
+     *            The trees_url
      */
     @JsonProperty("trees_url")
     public void setTreesUrl(String treesUrl) {
@@ -688,7 +693,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The statusesUrl
+     *         The statusesUrl
      */
     @JsonProperty("statuses_url")
     public String getStatusesUrl() {
@@ -698,7 +703,7 @@ public class Repository {
     /**
      * 
      * @param statusesUrl
-     *     The statuses_url
+     *            The statuses_url
      */
     @JsonProperty("statuses_url")
     public void setStatusesUrl(String statusesUrl) {
@@ -708,7 +713,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The languagesUrl
+     *         The languagesUrl
      */
     @JsonProperty("languages_url")
     public String getLanguagesUrl() {
@@ -718,7 +723,7 @@ public class Repository {
     /**
      * 
      * @param languagesUrl
-     *     The languages_url
+     *            The languages_url
      */
     @JsonProperty("languages_url")
     public void setLanguagesUrl(String languagesUrl) {
@@ -728,7 +733,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The stargazersUrl
+     *         The stargazersUrl
      */
     @JsonProperty("stargazers_url")
     public String getStargazersUrl() {
@@ -738,7 +743,7 @@ public class Repository {
     /**
      * 
      * @param stargazersUrl
-     *     The stargazers_url
+     *            The stargazers_url
      */
     @JsonProperty("stargazers_url")
     public void setStargazersUrl(String stargazersUrl) {
@@ -748,7 +753,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The contributorsUrl
+     *         The contributorsUrl
      */
     @JsonProperty("contributors_url")
     public String getContributorsUrl() {
@@ -758,7 +763,7 @@ public class Repository {
     /**
      * 
      * @param contributorsUrl
-     *     The contributors_url
+     *            The contributors_url
      */
     @JsonProperty("contributors_url")
     public void setContributorsUrl(String contributorsUrl) {
@@ -768,7 +773,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The subscribersUrl
+     *         The subscribersUrl
      */
     @JsonProperty("subscribers_url")
     public String getSubscribersUrl() {
@@ -778,7 +783,7 @@ public class Repository {
     /**
      * 
      * @param subscribersUrl
-     *     The subscribers_url
+     *            The subscribers_url
      */
     @JsonProperty("subscribers_url")
     public void setSubscribersUrl(String subscribersUrl) {
@@ -788,7 +793,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The subscriptionUrl
+     *         The subscriptionUrl
      */
     @JsonProperty("subscription_url")
     public String getSubscriptionUrl() {
@@ -798,7 +803,7 @@ public class Repository {
     /**
      * 
      * @param subscriptionUrl
-     *     The subscription_url
+     *            The subscription_url
      */
     @JsonProperty("subscription_url")
     public void setSubscriptionUrl(String subscriptionUrl) {
@@ -808,7 +813,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The commitsUrl
+     *         The commitsUrl
      */
     @JsonProperty("commits_url")
     public String getCommitsUrl() {
@@ -818,7 +823,7 @@ public class Repository {
     /**
      * 
      * @param commitsUrl
-     *     The commits_url
+     *            The commits_url
      */
     @JsonProperty("commits_url")
     public void setCommitsUrl(String commitsUrl) {
@@ -828,7 +833,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The gitCommitsUrl
+     *         The gitCommitsUrl
      */
     @JsonProperty("git_commits_url")
     public String getGitCommitsUrl() {
@@ -838,7 +843,7 @@ public class Repository {
     /**
      * 
      * @param gitCommitsUrl
-     *     The git_commits_url
+     *            The git_commits_url
      */
     @JsonProperty("git_commits_url")
     public void setGitCommitsUrl(String gitCommitsUrl) {
@@ -848,7 +853,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The commentsUrl
+     *         The commentsUrl
      */
     @JsonProperty("comments_url")
     public String getCommentsUrl() {
@@ -858,7 +863,7 @@ public class Repository {
     /**
      * 
      * @param commentsUrl
-     *     The comments_url
+     *            The comments_url
      */
     @JsonProperty("comments_url")
     public void setCommentsUrl(String commentsUrl) {
@@ -868,7 +873,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The issueCommentUrl
+     *         The issueCommentUrl
      */
     @JsonProperty("issue_comment_url")
     public String getIssueCommentUrl() {
@@ -878,7 +883,7 @@ public class Repository {
     /**
      * 
      * @param issueCommentUrl
-     *     The issue_comment_url
+     *            The issue_comment_url
      */
     @JsonProperty("issue_comment_url")
     public void setIssueCommentUrl(String issueCommentUrl) {
@@ -888,7 +893,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The contentsUrl
+     *         The contentsUrl
      */
     @JsonProperty("contents_url")
     public String getContentsUrl() {
@@ -898,7 +903,7 @@ public class Repository {
     /**
      * 
      * @param contentsUrl
-     *     The contents_url
+     *            The contents_url
      */
     @JsonProperty("contents_url")
     public void setContentsUrl(String contentsUrl) {
@@ -908,7 +913,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The compareUrl
+     *         The compareUrl
      */
     @JsonProperty("compare_url")
     public String getCompareUrl() {
@@ -918,7 +923,7 @@ public class Repository {
     /**
      * 
      * @param compareUrl
-     *     The compare_url
+     *            The compare_url
      */
     @JsonProperty("compare_url")
     public void setCompareUrl(String compareUrl) {
@@ -928,7 +933,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The mergesUrl
+     *         The mergesUrl
      */
     @JsonProperty("merges_url")
     public String getMergesUrl() {
@@ -938,7 +943,7 @@ public class Repository {
     /**
      * 
      * @param mergesUrl
-     *     The merges_url
+     *            The merges_url
      */
     @JsonProperty("merges_url")
     public void setMergesUrl(String mergesUrl) {
@@ -948,7 +953,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The archiveUrl
+     *         The archiveUrl
      */
     @JsonProperty("archive_url")
     public String getArchiveUrl() {
@@ -958,7 +963,7 @@ public class Repository {
     /**
      * 
      * @param archiveUrl
-     *     The archive_url
+     *            The archive_url
      */
     @JsonProperty("archive_url")
     public void setArchiveUrl(String archiveUrl) {
@@ -968,7 +973,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The downloadsUrl
+     *         The downloadsUrl
      */
     @JsonProperty("downloads_url")
     public String getDownloadsUrl() {
@@ -978,7 +983,7 @@ public class Repository {
     /**
      * 
      * @param downloadsUrl
-     *     The downloads_url
+     *            The downloads_url
      */
     @JsonProperty("downloads_url")
     public void setDownloadsUrl(String downloadsUrl) {
@@ -988,7 +993,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The issuesUrl
+     *         The issuesUrl
      */
     @JsonProperty("issues_url")
     public String getIssuesUrl() {
@@ -998,7 +1003,7 @@ public class Repository {
     /**
      * 
      * @param issuesUrl
-     *     The issues_url
+     *            The issues_url
      */
     @JsonProperty("issues_url")
     public void setIssuesUrl(String issuesUrl) {
@@ -1008,7 +1013,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The pullsUrl
+     *         The pullsUrl
      */
     @JsonProperty("pulls_url")
     public String getPullsUrl() {
@@ -1018,7 +1023,7 @@ public class Repository {
     /**
      * 
      * @param pullsUrl
-     *     The pulls_url
+     *            The pulls_url
      */
     @JsonProperty("pulls_url")
     public void setPullsUrl(String pullsUrl) {
@@ -1028,7 +1033,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The milestonesUrl
+     *         The milestonesUrl
      */
     @JsonProperty("milestones_url")
     public String getMilestonesUrl() {
@@ -1038,7 +1043,7 @@ public class Repository {
     /**
      * 
      * @param milestonesUrl
-     *     The milestones_url
+     *            The milestones_url
      */
     @JsonProperty("milestones_url")
     public void setMilestonesUrl(String milestonesUrl) {
@@ -1048,7 +1053,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The notificationsUrl
+     *         The notificationsUrl
      */
     @JsonProperty("notifications_url")
     public String getNotificationsUrl() {
@@ -1058,7 +1063,7 @@ public class Repository {
     /**
      * 
      * @param notificationsUrl
-     *     The notifications_url
+     *            The notifications_url
      */
     @JsonProperty("notifications_url")
     public void setNotificationsUrl(String notificationsUrl) {
@@ -1068,7 +1073,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The labelsUrl
+     *         The labelsUrl
      */
     @JsonProperty("labels_url")
     public String getLabelsUrl() {
@@ -1078,7 +1083,7 @@ public class Repository {
     /**
      * 
      * @param labelsUrl
-     *     The labels_url
+     *            The labels_url
      */
     @JsonProperty("labels_url")
     public void setLabelsUrl(String labelsUrl) {
@@ -1088,7 +1093,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The releasesUrl
+     *         The releasesUrl
      */
     @JsonProperty("releases_url")
     public String getReleasesUrl() {
@@ -1098,7 +1103,7 @@ public class Repository {
     /**
      * 
      * @param releasesUrl
-     *     The releases_url
+     *            The releases_url
      */
     @JsonProperty("releases_url")
     public void setReleasesUrl(String releasesUrl) {
@@ -1108,7 +1113,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The deploymentsUrl
+     *         The deploymentsUrl
      */
     @JsonProperty("deployments_url")
     public String getDeploymentsUrl() {
@@ -1118,7 +1123,7 @@ public class Repository {
     /**
      * 
      * @param deploymentsUrl
-     *     The deployments_url
+     *            The deployments_url
      */
     @JsonProperty("deployments_url")
     public void setDeploymentsUrl(String deploymentsUrl) {
@@ -1128,27 +1133,27 @@ public class Repository {
     /**
      * 
      * @return
-     *     The createdAt
+     *         The createdAt
      */
     @JsonProperty("created_at")
-    public String getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
     /**
      * 
      * @param createdAt
-     *     The created_at
+     *            The created_at
      */
     @JsonProperty("created_at")
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
     }
 
     /**
      * 
      * @return
-     *     The updatedAt
+     *         The updatedAt
      */
     @JsonProperty("updated_at")
     public String getUpdatedAt() {
@@ -1158,7 +1163,7 @@ public class Repository {
     /**
      * 
      * @param updatedAt
-     *     The updated_at
+     *            The updated_at
      */
     @JsonProperty("updated_at")
     public void setUpdatedAt(String updatedAt) {
@@ -1168,27 +1173,27 @@ public class Repository {
     /**
      * 
      * @return
-     *     The pushedAt
+     *         The pushedAt
      */
     @JsonProperty("pushed_at")
-    public String getPushedAt() {
+    public Long getPushedAt() {
         return pushedAt;
     }
 
     /**
      * 
      * @param pushedAt
-     *     The pushed_at
+     *            The pushed_at
      */
     @JsonProperty("pushed_at")
-    public void setPushedAt(String pushedAt) {
+    public void setPushedAt(Long pushedAt) {
         this.pushedAt = pushedAt;
     }
 
     /**
      * 
      * @return
-     *     The gitUrl
+     *         The gitUrl
      */
     @JsonProperty("git_url")
     public String getGitUrl() {
@@ -1198,7 +1203,7 @@ public class Repository {
     /**
      * 
      * @param gitUrl
-     *     The git_url
+     *            The git_url
      */
     @JsonProperty("git_url")
     public void setGitUrl(String gitUrl) {
@@ -1208,7 +1213,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The sshUrl
+     *         The sshUrl
      */
     @JsonProperty("ssh_url")
     public String getSshUrl() {
@@ -1218,7 +1223,7 @@ public class Repository {
     /**
      * 
      * @param sshUrl
-     *     The ssh_url
+     *            The ssh_url
      */
     @JsonProperty("ssh_url")
     public void setSshUrl(String sshUrl) {
@@ -1228,7 +1233,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The cloneUrl
+     *         The cloneUrl
      */
     @JsonProperty("clone_url")
     public String getCloneUrl() {
@@ -1238,7 +1243,7 @@ public class Repository {
     /**
      * 
      * @param cloneUrl
-     *     The clone_url
+     *            The clone_url
      */
     @JsonProperty("clone_url")
     public void setCloneUrl(String cloneUrl) {
@@ -1248,7 +1253,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The svnUrl
+     *         The svnUrl
      */
     @JsonProperty("svn_url")
     public String getSvnUrl() {
@@ -1258,7 +1263,7 @@ public class Repository {
     /**
      * 
      * @param svnUrl
-     *     The svn_url
+     *            The svn_url
      */
     @JsonProperty("svn_url")
     public void setSvnUrl(String svnUrl) {
@@ -1268,7 +1273,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The homepage
+     *         The homepage
      */
     @JsonProperty("homepage")
     public Object getHomepage() {
@@ -1278,7 +1283,7 @@ public class Repository {
     /**
      * 
      * @param homepage
-     *     The homepage
+     *            The homepage
      */
     @JsonProperty("homepage")
     public void setHomepage(Object homepage) {
@@ -1288,67 +1293,67 @@ public class Repository {
     /**
      * 
      * @return
-     *     The size
+     *         The size
      */
     @JsonProperty("size")
-    public Integer getSize() {
+    public Long getSize() {
         return size;
     }
 
     /**
      * 
      * @param size
-     *     The size
+     *            The size
      */
     @JsonProperty("size")
-    public void setSize(Integer size) {
+    public void setSize(Long size) {
         this.size = size;
     }
 
     /**
      * 
      * @return
-     *     The stargazersCount
+     *         The stargazersCount
      */
     @JsonProperty("stargazers_count")
-    public Integer getStargazersCount() {
+    public Long getStargazersCount() {
         return stargazersCount;
     }
 
     /**
      * 
      * @param stargazersCount
-     *     The stargazers_count
+     *            The stargazers_count
      */
     @JsonProperty("stargazers_count")
-    public void setStargazersCount(Integer stargazersCount) {
+    public void setStargazersCount(Long stargazersCount) {
         this.stargazersCount = stargazersCount;
     }
 
     /**
      * 
      * @return
-     *     The watchersCount
+     *         The watchersCount
      */
     @JsonProperty("watchers_count")
-    public Integer getWatchersCount() {
+    public Long getWatchersCount() {
         return watchersCount;
     }
 
     /**
      * 
      * @param watchersCount
-     *     The watchers_count
+     *            The watchers_count
      */
     @JsonProperty("watchers_count")
-    public void setWatchersCount(Integer watchersCount) {
+    public void setWatchersCount(Long watchersCount) {
         this.watchersCount = watchersCount;
     }
 
     /**
      * 
      * @return
-     *     The language
+     *         The language
      */
     @JsonProperty("language")
     public String getLanguage() {
@@ -1358,7 +1363,7 @@ public class Repository {
     /**
      * 
      * @param language
-     *     The language
+     *            The language
      */
     @JsonProperty("language")
     public void setLanguage(String language) {
@@ -1368,7 +1373,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The hasIssues
+     *         The hasIssues
      */
     @JsonProperty("has_issues")
     public Boolean getHasIssues() {
@@ -1378,7 +1383,7 @@ public class Repository {
     /**
      * 
      * @param hasIssues
-     *     The has_issues
+     *            The has_issues
      */
     @JsonProperty("has_issues")
     public void setHasIssues(Boolean hasIssues) {
@@ -1388,7 +1393,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The hasDownloads
+     *         The hasDownloads
      */
     @JsonProperty("has_downloads")
     public Boolean getHasDownloads() {
@@ -1398,7 +1403,7 @@ public class Repository {
     /**
      * 
      * @param hasDownloads
-     *     The has_downloads
+     *            The has_downloads
      */
     @JsonProperty("has_downloads")
     public void setHasDownloads(Boolean hasDownloads) {
@@ -1408,7 +1413,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The hasWiki
+     *         The hasWiki
      */
     @JsonProperty("has_wiki")
     public Boolean getHasWiki() {
@@ -1418,7 +1423,7 @@ public class Repository {
     /**
      * 
      * @param hasWiki
-     *     The has_wiki
+     *            The has_wiki
      */
     @JsonProperty("has_wiki")
     public void setHasWiki(Boolean hasWiki) {
@@ -1428,7 +1433,7 @@ public class Repository {
     /**
      * 
      * @return
-     *     The hasPages
+     *         The hasPages
      */
     @JsonProperty("has_pages")
     public Boolean getHasPages() {
@@ -1438,7 +1443,7 @@ public class Repository {
     /**
      * 
      * @param hasPages
-     *     The has_pages
+     *            The has_pages
      */
     @JsonProperty("has_pages")
     public void setHasPages(Boolean hasPages) {
@@ -1448,27 +1453,27 @@ public class Repository {
     /**
      * 
      * @return
-     *     The forksCount
+     *         The forksCount
      */
     @JsonProperty("forks_count")
-    public Integer getForksCount() {
+    public Long getForksCount() {
         return forksCount;
     }
 
     /**
      * 
      * @param forksCount
-     *     The forks_count
+     *            The forks_count
      */
     @JsonProperty("forks_count")
-    public void setForksCount(Integer forksCount) {
+    public void setForksCount(Long forksCount) {
         this.forksCount = forksCount;
     }
 
     /**
      * 
      * @return
-     *     The mirrorUrl
+     *         The mirrorUrl
      */
     @JsonProperty("mirror_url")
     public Object getMirrorUrl() {
@@ -1478,7 +1483,7 @@ public class Repository {
     /**
      * 
      * @param mirrorUrl
-     *     The mirror_url
+     *            The mirror_url
      */
     @JsonProperty("mirror_url")
     public void setMirrorUrl(Object mirrorUrl) {
@@ -1488,87 +1493,87 @@ public class Repository {
     /**
      * 
      * @return
-     *     The openIssuesCount
+     *         The openIssuesCount
      */
     @JsonProperty("open_issues_count")
-    public Integer getOpenIssuesCount() {
+    public Long getOpenIssuesCount() {
         return openIssuesCount;
     }
 
     /**
      * 
      * @param openIssuesCount
-     *     The open_issues_count
+     *            The open_issues_count
      */
     @JsonProperty("open_issues_count")
-    public void setOpenIssuesCount(Integer openIssuesCount) {
+    public void setOpenIssuesCount(Long openIssuesCount) {
         this.openIssuesCount = openIssuesCount;
     }
 
     /**
      * 
      * @return
-     *     The forks
+     *         The forks
      */
     @JsonProperty("forks")
-    public Integer getForks() {
+    public Long getForks() {
         return forks;
     }
 
     /**
      * 
      * @param forks
-     *     The forks
+     *            The forks
      */
     @JsonProperty("forks")
-    public void setForks(Integer forks) {
+    public void setForks(Long forks) {
         this.forks = forks;
     }
 
     /**
      * 
      * @return
-     *     The openIssues
+     *         The openIssues
      */
     @JsonProperty("open_issues")
-    public Integer getOpenIssues() {
+    public Long getOpenIssues() {
         return openIssues;
     }
 
     /**
      * 
      * @param openIssues
-     *     The open_issues
+     *            The open_issues
      */
     @JsonProperty("open_issues")
-    public void setOpenIssues(Integer openIssues) {
+    public void setOpenIssues(Long openIssues) {
         this.openIssues = openIssues;
     }
 
     /**
      * 
      * @return
-     *     The watchers
+     *         The watchers
      */
     @JsonProperty("watchers")
-    public Integer getWatchers() {
+    public Long getWatchers() {
         return watchers;
     }
 
     /**
      * 
      * @param watchers
-     *     The watchers
+     *            The watchers
      */
     @JsonProperty("watchers")
-    public void setWatchers(Integer watchers) {
+    public void setWatchers(Long watchers) {
         this.watchers = watchers;
     }
 
     /**
      * 
      * @return
-     *     The defaultBranch
+     *         The defaultBranch
      */
     @JsonProperty("default_branch")
     public String getDefaultBranch() {
@@ -1578,11 +1583,51 @@ public class Repository {
     /**
      * 
      * @param defaultBranch
-     *     The default_branch
+     *            The default_branch
      */
     @JsonProperty("default_branch")
     public void setDefaultBranch(String defaultBranch) {
         this.defaultBranch = defaultBranch;
+    }
+
+    /**
+     * 
+     * @return
+     *         The stargazers
+     */
+    @JsonProperty("stargazers")
+    public Long getStargazers() {
+        return stargazers;
+    }
+
+    /**
+     * 
+     * @param stargazers
+     *            The stargazers
+     */
+    @JsonProperty("stargazers")
+    public void setStargazers(Long stargazers) {
+        this.stargazers = stargazers;
+    }
+
+    /**
+     * 
+     * @return
+     *         The masterBranch
+     */
+    @JsonProperty("master_branch")
+    public String getMasterBranch() {
+        return masterBranch;
+    }
+
+    /**
+     * 
+     * @param masterBranch
+     *            The master_branch
+     */
+    @JsonProperty("master_branch")
+    public void setMasterBranch(String masterBranch) {
+        this.masterBranch = masterBranch;
     }
 
     @Override

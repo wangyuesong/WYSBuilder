@@ -38,7 +38,7 @@ public class Sender {
     @JsonProperty("login")
     private String login;
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("avatar_url")
     private String avatarUrl;
     @JsonProperty("gravatar_id")
@@ -98,7 +98,7 @@ public class Sender {
      *     The id
      */
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
@@ -108,7 +108,7 @@ public class Sender {
      *     The id
      */
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

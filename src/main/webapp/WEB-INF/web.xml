@@ -15,6 +15,16 @@
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>Build Worker Servlet</servlet-name>
+		<servlet-class>wys.servlets.BuilderWorkerServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Build Worker Servlet</servlet-name>
+		<url-pattern>/doBuild</url-pattern>
+	</servlet-mapping>
+	
+	
 	
 	<filter>
 		<filter-name>cross-origin</filter-name>
