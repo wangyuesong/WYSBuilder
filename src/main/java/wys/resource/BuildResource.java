@@ -65,42 +65,50 @@ public class BuildResource {
         this.repoName = repoName;
     }
 
+    /**
+     * 
+     * Description: This function create a build on jenkins server, use head commit hash as job's name.
+     * 
+     * @param headerToken
+     * @param payload
+     * @return
+     *         Response
+     */
     @POST
     public Response addBuild(@HeaderParam("Authentication") String headerToken, HookPayload payload) {
         // if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
         // return Response.status(Response.Status.UNAUTHORIZED).build();
         // }
-        Key parentKey = KeyFactory.createKey("User", userLogin);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-        Entity build = new Entity("Build", childKey);
-        datastore.put(build);
-        long buildId = build.getKey().getId();
+
+        String jobName = payload.getHeadCommit().getId();
         String projectUrl = payload.getRepository().getUrl();
         String url = payload.getRepository().getSshUrl();
-        String credentialsId = "";
+        String credentialsId = "03f2a0cf-a27a-44bd-912f-b5c3e9c5117a";
         String targets = "clean install";
         // Actually it's commit id
         String branch = payload.getHeadCommit().getId();
-        String ref = payload.getRef();
-        String buildBranch = ref.substring(ref.lastIndexOf('/'));
-        System.out.println("In add build");
-        System.out.println(branch);
-        System.out.println(buildBranch);
+
         queueService.add(TaskOptions.Builder.withUrl("/doBuild").
-                param("jobName", buildId + "").
+                param("jobName", jobName).
                 param("projectUrl", projectUrl).
                 param("url", url).
                 param("targets", targets).
                 param("branch", branch + "").
+                param("crednetialsId", credentialsId).
                 method(Method.POST));
 
-        System.out.println(buildId);
+        String ref = payload.getRef();
+        String buildBranch = ref.substring(ref.lastIndexOf('/'));
+
+        Key parentKey = KeyFactory.createKey("User", userLogin);
+        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
+        Key grandChildKey = KeyFactory.createKey(childKey, "Build", payload.getHeadCommit().getId());
+        Entity build = new Entity(grandChildKey);
+        build.setProperty("name", jobName);
+        build.setProperty("branch", buildBranch);
+        build.setProperty("log_url", Constants.JENKINS_SERVER_JOB_API_ENDPOINT + jobName + "/1/" + "consoleText");
+        datastore.put(build);
 
         return Response.ok().build();
-        // queueService.add(TaskOptions.Builder.withUrl("/doBuild").
-        // param("keyname", key).
-        // param("value", value)
-        // .method(Method.POST));
-
     }
 }

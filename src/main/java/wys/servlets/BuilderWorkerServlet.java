@@ -57,7 +57,7 @@ public class BuilderWorkerServlet extends HttpServlet {
         String jobName = request.getParameter("jobName");
         String projectUrl = request.getParameter("projectUrl");
         String url = request.getParameter("url");
-        String credentialsId = "03f2a0cf-a27a-44bd-912f-b5c3e9c5117a";
+        String credentialsId = request.getParameter("credentialsId");
         String targets = request.getParameter("targets");
         String branch = request.getParameter("branch");
         ServletContext context = getServletContext();
@@ -65,9 +65,13 @@ public class BuilderWorkerServlet extends HttpServlet {
             ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, branch);
             JenkinsServer jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
             System.out.println("About to create job");
-            jenkins.createJob(
-                    jobName,
-                    inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())));
+            try {
+                jenkins.createJob(
+                        jobName,
+                        inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())));
+            } catch (Exception e) {
+                
+            }
             Job job = jenkins.getJob(jobName);
             job.build();
         } catch (ParserConfigurationException e) {
