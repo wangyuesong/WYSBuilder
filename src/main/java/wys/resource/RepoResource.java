@@ -1,6 +1,5 @@
 package wys.resource;
 
-
 import java.io.IOException;
 import java.util.List;
 
@@ -59,7 +58,7 @@ public class RepoResource {
     GitHubClient gitClient;
     RepositoryService repositoryService;
     UserService userService;
-    
+
     private static Logger logger = Logger.getLogger(RepoResource.class);
 
     public RepoResource(String userLogin) {
@@ -93,107 +92,55 @@ public class RepoResource {
         }
         gitClient.setOAuth2Token(headerToken);
 
+        Entity entity = null;
         String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName);
         Object cacheResult = syncCache.get(reposCacheKey);
-        if (cacheResult != null) {
-            return Response.ok().entity(cacheResult).build();
-        }
-        Key parentKey = KeyFactory.createKey("User", userLogin);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
 
-        Entity entity = datastore.get(childKey);
+        if (cacheResult != null) {
+            logger.info("One repo fecth from cache");
+            entity = (Entity) cacheResult;
+            syncCache.put(repoName, entity);
+        }
+        else {
+            Key parentKey = KeyFactory.createKey("User", userLogin);
+            Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
+            entity = datastore.get(childKey);
+        }
         RepositoryModel r = new RepositoryModel();
         EntityToViewModelUtils.convertEntityToRepoModel(entity, r);
+
+       
+
         return Response.ok().entity(r).build();
     }
 
     /**
      * 
-     * Description: Add webhook to github. Update Repository model to have hook info.
+     * Description: Sub-resource for handling one hook related request
      * 
-     * @param request
-     * @param headerToken
-     * @param repoName
+     * @param userLogin
      * @return
-     * @throws EntityNotFoundException
-     * @throws IOException
-     *             Response
+     *         RepoResource
      */
-
-    @POST
-    @Path("{repoName}/hook")
-    public Response addWebhook(@Context HttpServletRequest request,
-            @HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
-            throws EntityNotFoundException, IOException {
-        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-        gitClient.setOAuth2Token(headerToken);
-        Repository repo = null;
-        List<Repository> repos = repositoryService.getRepositories();
-        for (Repository r : repos) {
-            if (r.getName().equals(repoName))
-                repo = r;
-        }
-        if (repo == null)
-            return Response.status(400).entity("No such repository").build();
-        User user = userService.getUser();
-        String userLogin = user.getLogin();
-
-        // Call Github Webhook API to add hook
-        // FIXME Need refactor
-        
-        String hookReceiverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-                request.getRequestURI().replace("hook", "hookReceiver");
-        AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
-
-        // Receive response and save it to Repository model in datastore
-        EmbeddedEntity hookEntity = new EmbeddedEntity();
-        GithubModelToEntityUtils.convertAddhookResponseModelToEntity(hookResponse, hookEntity);
-        Key parentKey = KeyFactory.createKey("User", userLogin);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-        Entity entity = datastore.get(childKey);
-        entity.setProperty("hook", hookEntity);
-        datastore.put(entity);
-        // Invalidate cache
-        syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        logger.info(userLogin  +"/" + repoName + "add hook");
-        return Response.ok().entity("Webhook added").build();
+    @Path("/{repoName}/hook")
+    public HookResource getHook(@PathParam("repoName") String repoName) {
+        return new HookResource(userLogin, repoName);
     }
-
+    
+    
     /**
      * 
-     * Description: Delete a webhook
-     * @param headerToken
-     * @param repoName
+     * Description: Sub-resource for handling branches related request
+     * 
+     * @param userLogin
      * @return
-     * @throws EntityNotFoundException
-     * Response
+     *         RepoResource
      */
-    @DELETE
-    @Path("{repoName}/hook")
-    public Response deleteWebhook(@HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName) throws EntityNotFoundException {
-        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-        
-        Key parentKey = KeyFactory.createKey("User", userLogin);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-        Entity entity = datastore.get(childKey);
-        Object object = entity.getProperty("hook");
-        if(object == null)
-            return Response.status(400).entity("No hook existed").build();
-        EmbeddedEntity e = (EmbeddedEntity)object;
-        String hookId = (String)e.getProperty("id");
-        WebhookUtils.deleteWebhook(headerToken, userLogin, repoName, hookId);
-        entity.removeProperty("hook");
-        datastore.put(entity);
-        
-        // Invalidate cache
-        syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        logger.info(userLogin  +"/" + repoName + "delete hook");
-        return Response.ok().entity("Webhook deleted").build();
+    @Path("/{repoName}/branches")
+    public BranchResource getBranches(@PathParam("repoName") String repoName) {
+        return new BranchResource(userLogin, repoName);
     }
+    
 
     @POST
     @Path("{repoName}/hookReceiver")
@@ -203,68 +150,6 @@ public class RepoResource {
         return Response.ok().build();
     }
 
-    @XmlRootElement
-    public static class SetHookModel {
-
-        private String name;
-        private boolean active;
-        private String[] events;
-        private SetHookModelConfig config;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public boolean isActive() {
-            return active;
-        }
-
-        public void setActive(boolean active) {
-            this.active = active;
-        }
-
-        public String[] getEvents() {
-            return events;
-        }
-
-        public void setEvents(String[] events) {
-            this.events = events;
-        }
-
-        public SetHookModelConfig getConfig() {
-            return config;
-        }
-
-        public void setConfig(SetHookModelConfig config) {
-            this.config = config;
-        }
-
-        public static class SetHookModelConfig {
-            String url;
-            String content_type;
-
-            public String getUrl() {
-                return url;
-            }
-
-            public void setUrl(String url) {
-                this.url = url;
-            }
-
-            public String getContent_type() {
-                return content_type;
-            }
-
-            public void setContent_type(String content_type) {
-                this.content_type = content_type;
-            }
-
-        }
-
-    }
+   
 
 }

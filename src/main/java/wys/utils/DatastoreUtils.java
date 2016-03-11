@@ -55,6 +55,10 @@ public class DatastoreUtils{
         return userLogin + "_" + repoName + "_repo";
     }
     
+    public static String getUserOneRepoBranchesCacheKey(String userLogin, String repoName){
+        return userLogin + "_" + repoName + "_repo_branches";
+    }
+    
   //    public Entity injectPojoToDatastoreEntity(T pojo, Entity entity){
 //        Field[] fields = pojo.getClass().get
 //        for(Field f : fields){

@@ -35,6 +35,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.sun.istack.logging.Logger;
 
 /**
  * @Project: BuilderBackend
@@ -53,6 +54,7 @@ public class UsersResource {
     RepositoryService repositoryService;
     UserService userService;
     MemcacheService syncCache;
+    private static Logger logger = Logger.getLogger(UsersResource.class);
 
     public UsersResource() {
         super();
@@ -63,6 +65,7 @@ public class UsersResource {
         userService = new UserService(gitClient);
     }
 
+    @SuppressWarnings("unchecked")
     @GET
     @Produces("application/json")
     public Response getAllRepos(@HeaderParam("Authentication") String headerToken,
@@ -73,25 +76,34 @@ public class UsersResource {
         }
         gitClient.setOAuth2Token(headerToken);
 
+        List<Entity> entities = null;
         // Repo cache key
         String reposCacheKey = DatastoreUtils.getUserReposCacheKey(userLogin);
         Object cacheResult = syncCache.get(reposCacheKey);
+      
         if (cacheResult != null) {
-            return Response.ok().entity(cacheResult).build();
+            logger.info("Repos fetch from cache");
+            entities = (List<Entity>) cacheResult;
         }
-
-        Key k = KeyFactory.createKey("User", userLogin);
-        Query query = new Query("Repository").setAncestor(k);
-        List<Entity> entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        else {
+            Key k = KeyFactory.createKey("User", userLogin);
+            Query query = new Query("Repository").setAncestor(k);
+            entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+            syncCache.put(reposCacheKey, entities);
+        }
+        
         List<RepositoryModel> models = new ArrayList<RepositoryModel>();
         for (Entity e : entities) {
             RepositoryModel r = new RepositoryModel();
             EntityToViewModelUtils.convertEntityToRepoModel(e, r);
             models.add(r);
         }
+        
         GenericEntity<List<RepositoryModel>> genericModels =
                 new GenericEntity<List<RepositoryModel>>(models) {
                 };
+
+        
 
         return Response.ok().entity(genericModels).build();
     }
