@@ -1,8 +1,8 @@
 package wys.servlets;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.offbytwo.jenkins.JenkinsServer;
+import com.offbytwo.jenkins.model.Job;
 
 /**
  * @Project: wysbuilder
@@ -61,13 +62,14 @@ public class BuilderWorkerServlet extends HttpServlet {
         String branch = request.getParameter("branch");
         ServletContext context = getServletContext();
         try {
-            createDom(context, projectUrl, url, credentialsId, targets, branch);
+            ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, branch);
             JenkinsServer jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
             System.out.println("About to create job");
             jenkins.createJob(
                     jobName,
-                    inputStream2String(new FileInputStream(new File(context.getResource("/WEB-INF/config.xml").toURI()))));
-
+                    inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())));
+            Job job = jenkins.getJob(jobName);
+            job.build();
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -95,7 +97,8 @@ public class BuilderWorkerServlet extends HttpServlet {
         return buffer.toString();
     }
 
-    public static void createDom(ServletContext context, String p_projectUrl, String p_url, String p_credentialsId,
+    public static ByteArrayOutputStream createDom(ServletContext context, String p_projectUrl, String p_url,
+            String p_credentialsId,
             String p_targets,
             String p_branch) throws ParserConfigurationException, SAXException, IOException, TransformerException,
             URISyntaxException {
@@ -113,7 +116,7 @@ public class BuilderWorkerServlet extends HttpServlet {
 
         Node credentialsId = doc.getElementsByTagName("credentialsId").item(0);
         // credentialsId.setTextContent("03f2a0cf-a27a-44bd-912f-b5c3e9c5117a");
-        credentialsId.setTextContent(p_url);
+        credentialsId.setTextContent(p_credentialsId);
 
         Node targets = doc.getElementsByTagName("targets").item(0);
         // targets.setTextContent("clean install");
@@ -126,9 +129,10 @@ public class BuilderWorkerServlet extends HttpServlet {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(new File(context.getRealPath("/WEB-INF/config.xml")));
-
+        ByteArrayOutputStream returnStream = new ByteArrayOutputStream();
+        StreamResult result = new StreamResult(returnStream);
+        // StreamResult result2 = new StreamResult
         transformer.transform(source, result);
-
+        return returnStream;
     }
 }
