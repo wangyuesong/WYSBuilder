@@ -22,13 +22,27 @@ public class Constants {
 
     /**
      * 
-     * Description: Generate log url on jenkins server based on job's name. 
+     * Description: Generate log url on jenkins server based on job's name.
+     * 
      * @param jobName
      * @return
-     * String
+     *         String
      */
-    public final static String getBuildLogUrlFromJobName(String jobName) {
-        //FIXME not sure if /1/ is ok
+    public final static String getJenkinsBuildLogUrlFromJobName(String jobName) {
+        // FIXME not sure if /1/ is ok
         return Constants.JENKINS_SERVER_JOB_API_ENDPOINT + "/" + jobName + "/1/" + "logText/progressiveHtml";
+    }
+
+    /**
+     * Description: Generate log url(bucket/file) on Google Cloud Storage based on repoName and jobName
+     * 
+     * @param repoName
+     * @param jobName
+     * @return
+     *         String
+     */
+    public static String getGCSBuildLogUrlFromRepoNameJobNameAndServerURL(String repoName, String jobName,
+            String serverUrl) {
+        return serverUrl + "/gcs/" + repoName + "/" + jobName;
     }
 }

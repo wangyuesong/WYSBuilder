@@ -11,8 +11,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import wys.services.AuthenticationService;
-
 /**
  * @Project: wysbuilder
  * @Title: RestAuthenticationFilter.java

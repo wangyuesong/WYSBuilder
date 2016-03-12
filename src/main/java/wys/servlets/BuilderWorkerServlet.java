@@ -27,6 +27,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import wys.resource.HookResource;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.memcache.MemcacheService;
@@ -34,6 +36,7 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Job;
 import com.offbytwo.jenkins.model.JobWithDetails;
+import com.sun.istack.logging.Logger;
 
 /**
  * @Project: wysbuilder
@@ -52,6 +55,7 @@ public class BuilderWorkerServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    private static Logger logger = Logger.getLogger(BuilderWorkerServlet.class);
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -65,31 +69,15 @@ public class BuilderWorkerServlet extends HttpServlet {
         try {
             ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, branch);
             JenkinsServer jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
-            System.out.println("About to create job");
-            try {
-                jenkins.createJob(
-                        jobName,
-                        inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())));
-            } catch (Exception e) {
-                
-            }
+            logger.info("About to create job: " + jobName);
+            jenkins.createJob(
+                    jobName,
+                    inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())), false);
             Job job = jenkins.getJob(jobName);
-            job.build();
-            JobWithDetails details = job.details();
-            details.getLastBuild().details().getResult();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        // Do something with key.
-        catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
+            job.build(false);
+            // JobWithDetails details = job.details();
+            // details.getLastBuild().details().getResult();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
