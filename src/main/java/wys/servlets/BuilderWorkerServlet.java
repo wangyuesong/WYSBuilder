@@ -65,6 +65,7 @@ public class BuilderWorkerServlet extends HttpServlet {
         String credentialsId = request.getParameter("credentialsId");
         String targets = request.getParameter("targets");
         String branch = request.getParameter("branch");
+        
         ServletContext context = getServletContext();
         try {
             ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, branch);
