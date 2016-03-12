@@ -55,7 +55,7 @@ public class UsersResource {
     UserService userService;
     MemcacheService syncCache;
     private static Logger logger = Logger.getLogger(UsersResource.class);
-
+    
     public UsersResource() {
         super();
         gitClient = new GitHubClient();
@@ -64,7 +64,7 @@ public class UsersResource {
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
     }
-
+    
     @SuppressWarnings("unchecked")
     @GET
     @Produces("application/json")

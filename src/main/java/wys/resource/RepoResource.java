@@ -88,7 +88,7 @@ public class RepoResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
-
+        
         Entity entity = null;
         String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName);
         Object cacheResult = syncCache.get(reposCacheKey);
@@ -155,7 +155,9 @@ public class RepoResource {
             @PathParam("repoName") String repoName, @Context HttpServletRequest request,
             HookPayload payload) {
         logger.info("Request received");
-        WebTarget target = client.target(Constants.SERVER_BASE_URI);
+        
+        String serverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort();
+        WebTarget target = client.target(serverUrl);
         try {
             Response response = target
                     .path("rest").path(userLogin).path(repoName).path("builds")

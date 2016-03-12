@@ -33,6 +33,7 @@ import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Job;
+import com.offbytwo.jenkins.model.JobWithDetails;
 
 /**
  * @Project: wysbuilder
@@ -74,6 +75,8 @@ public class BuilderWorkerServlet extends HttpServlet {
             }
             Job job = jenkins.getJob(jobName);
             job.build();
+            JobWithDetails details = job.details();
+            details.getLastBuild().details().getResult();
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

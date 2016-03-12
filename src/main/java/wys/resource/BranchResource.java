@@ -11,7 +11,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.TypedResource;
@@ -113,7 +112,7 @@ public class BranchResource {
 
         for (RepositoryBranch branch : branches) {
             TypedResource commit = branch.getCommit();
-//            commit.
+            // commit.
         }
         return Response.ok().build();
     }

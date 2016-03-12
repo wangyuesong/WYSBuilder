@@ -51,6 +51,9 @@
 			<artifactId>appengine-api-1.0-sdk</artifactId>
 			<version>${appengine.version}</version>
 		</dependency>
+
+
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -87,18 +90,11 @@
 		</dependency>
 
 		<!-- Test Dependencies -->
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-testing</artifactId>
-			<version>${appengine.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-stubs</artifactId>
-			<version>${appengine.version}</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- <dependency> <groupId>com.google.appengine</groupId> <artifactId>appengine-testing</artifactId> 
+			<version>${appengine.version}</version> </dependency> <dependency> <groupId>com.google.appengine</groupId> 
+			<artifactId>appengine-api-stubs</artifactId> <version>${appengine.version}</version> 
+			</dependency> -->
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlets</artifactId>
@@ -120,6 +116,12 @@
 			<artifactId>jersey-json</artifactId>
 			<version>1.19</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.appengine.tools</groupId>
+			<artifactId>appengine-gcs-client</artifactId>
+			<version>RELEASE</version>
+		</dependency>
+
 
 	</dependencies>
 

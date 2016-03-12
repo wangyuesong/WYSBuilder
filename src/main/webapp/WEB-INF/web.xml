@@ -25,6 +25,16 @@
 	</servlet-mapping>
 	
 	
+	<servlet>
+		<servlet-name>GCS Servlet</servlet-name>
+		<servlet-class>wys.servlets.GcsExampleServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GCS Servlet</servlet-name>
+		<url-pattern>/gcs/*</url-pattern>
+	</servlet-mapping>
+	
+	
 	
 	<filter>
 		<filter-name>cross-origin</filter-name>

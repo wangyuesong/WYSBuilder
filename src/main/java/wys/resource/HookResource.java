@@ -106,7 +106,7 @@ public class HookResource {
         String hookReceiverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
                 request.getRequestURI().replace("hook", "hookReceiver");
         AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
-
+        
         // Receive response and save it to Repository model in datastore
         EmbeddedEntity hookEntity = new EmbeddedEntity();
         GithubModelToEntityUtils.convertAddhookResponseModelToEntity(hookResponse, hookEntity);
