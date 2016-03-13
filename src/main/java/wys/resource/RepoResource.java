@@ -19,11 +19,10 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import wys.pojos.hookpayload.HookPayload;
-import wys.resource.UsersResource.RepositoryModel;
-import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
+import wys.viewmodel.RepositoryModel;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -80,7 +79,7 @@ public class RepoResource {
      * @throws EntityNotFoundException
      */
     @GET
-    @Path("{repoName}")
+    @Path("/{repoName}")
     @Produces("application/json")
     public Response getOneRepo(@HeaderParam("Authentication") String headerToken, @PathParam("repoName") String repoName)
             throws EntityNotFoundException {
@@ -149,7 +148,7 @@ public class RepoResource {
     }
 
     @POST
-    @Path("{repoName}/hookReceiver")
+    @Path("/{repoName}/hookReceiver")
     @Produces("application/json")
     public Response receiveHook(@HeaderParam("Authentication") String headerToken,
             @PathParam("repoName") String repoName, @Context HttpServletRequest request,

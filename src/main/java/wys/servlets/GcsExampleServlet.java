@@ -3,7 +3,8 @@ package wys.servlets;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 
 import javax.servlet.http.HttpServlet;
@@ -16,6 +17,12 @@ import javax.ws.rs.core.Response;
 
 import wys.utils.CloudStorageUtils;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -27,6 +34,9 @@ import com.google.appengine.tools.cloudstorage.GcsOutputChannel;
 import com.google.appengine.tools.cloudstorage.GcsService;
 import com.google.appengine.tools.cloudstorage.GcsServiceFactory;
 import com.google.appengine.tools.cloudstorage.RetryParams;
+import com.offbytwo.jenkins.JenkinsServer;
+import com.offbytwo.jenkins.model.Job;
+import com.sun.istack.logging.Logger;
 
 /**
  * @Project: wysbuilder
@@ -43,13 +53,15 @@ public class GcsExampleServlet extends HttpServlet {
      */
 
     private String jenkinsLogUrl;
-    private String gcsLogPath;
     private int interval;
+    private String jobFullPath;
     private String currentOffset;
     private WebTarget target;
     private Client client;
     private Queue queueService;
-
+    private static Logger logger = Logger.getLogger(GcsExampleServlet.class);
+    private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    
     private static final long serialVersionUID = 1L;
     private final GcsService gcsService = GcsServiceFactory.createGcsService(new RetryParams.Builder()
             .initialRetryDelayMillis(10)
@@ -71,6 +83,7 @@ public class GcsExampleServlet extends HttpServlet {
         jenkinsLogUrl = req.getParameter("jenkinsLogUrl");
         interval = Integer.parseInt(req.getParameter("interval"));
         currentOffset = req.getParameter("currentOffset");
+        jobFullPath = req.getParameter("jobFullPath");
         client = ClientBuilder.newClient();
         target = client.target(jenkinsLogUrl + "?start=" + currentOffset);
         queueService = QueueFactory.getDefaultQueue();
@@ -92,6 +105,7 @@ public class GcsExampleServlet extends HttpServlet {
                     .withUrl("/gcs/" + fileName.getBucketName() + "/" + fileName.getObjectName()).
                     param("jenkinsLogUrl", jenkinsLogUrl).
                     param("interval", "5000").
+                    param("jobFullPath", jobFullPath).
                     param("currentOffset", "0").
                     method(Method.POST));
         }
@@ -104,17 +118,37 @@ public class GcsExampleServlet extends HttpServlet {
                 e.printStackTrace();
             }
 
-            // Invoke another request
+            // Still more log, Invoke another request
             if (response.getHeaderString("X-More-Data") != null) {
                 queueService.add(TaskOptions.Builder
                         .withUrl("/gcs/" + fileName.getBucketName() + "/" + fileName.getObjectName()).
                         param("jenkinsLogUrl", jenkinsLogUrl).
                         param("interval", "5000").
+                        param("jobFullPath", jobFullPath).
                         param("currentOffset", xTextSize).
                         method(Method.POST));
             }
+            // No more log, update build status in datastore
             else {
-                System.out.println("Finished retriving log");
+                JenkinsServer jenkins;
+                try {
+                    String[] jobPath = jobFullPath.split("/");
+                    jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
+                    Job job = jenkins.getJob(fileName.getObjectName());
+                    Key parentKey = KeyFactory.createKey("User", jobPath[0]);
+                    Key childKey = KeyFactory.createKey(parentKey, "Repository", jobPath[1]);
+                    Key grandChildKey = KeyFactory.createKey(childKey, "Build", jobPath[2]);
+                    Entity buildEntity = datastore.get(grandChildKey);
+                    buildEntity.setProperty("status", job.details().getLastBuild().details().getResult());
+                } catch (URISyntaxException | EntityNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                logger.info("Fetching job final result: " + fileName.getObjectName());
+               
+                
+                logger.info("Finished retriving log");
+                
             }
         }
         // Read something

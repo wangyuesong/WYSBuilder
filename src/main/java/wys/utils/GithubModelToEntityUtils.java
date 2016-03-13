@@ -30,10 +30,12 @@ public class GithubModelToEntityUtils {
         e.setProperty("name", r.getName());
         e.setProperty("description", r.getDescription());
         e.setProperty("git_url", r.getGitUrl());
+        e.setProperty("html_url", r.getHtmlUrl());
         e.setProperty("homepage", r.getHomepage());
         e.setProperty("master_branch", r.getMasterBranch());
         e.setProperty("created_at", r.getCreatedAt());
         e.setProperty("updated_at", r.getUpdatedAt());
+      
     }
     
     public static void convertAddhookResponseModelToEntity(AddhookResponse r, EmbeddedEntity e){

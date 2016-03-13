@@ -41,8 +41,8 @@ public class Constants {
      * @return
      *         String
      */
-    public static String getGCSBuildLogUrlFromRepoNameJobNameAndServerURL(String repoName, String jobName,
+    public static String getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(String userLogin,String repoName, String jobName,
             String serverUrl) {
-        return serverUrl + "/gcs/" + repoName + "/" + jobName;
+        return serverUrl + "/rest/" + userLogin + "/" + repoName + "/" + jobName;
     }
 }

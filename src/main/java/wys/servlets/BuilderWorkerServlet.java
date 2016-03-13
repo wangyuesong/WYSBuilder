@@ -76,8 +76,7 @@ public class BuilderWorkerServlet extends HttpServlet {
                     inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())), false);
             Job job = jenkins.getJob(jobName);
             job.build(false);
-            // JobWithDetails details = job.details();
-            // details.getLastBuild().details().getResult();
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
