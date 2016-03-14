@@ -77,6 +77,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
         client = ClientBuilder.newClient();
         target = client.target(jenkinsLogUrl + "?start=" + currentOffset);
 
+        
         String result = null;
 
         Response response = target.request().get();
