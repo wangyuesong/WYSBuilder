@@ -40,17 +40,15 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
 @Path("/auth")
 public class AuthResource {
 
-  
-//    Client client = ClientBuilder.newClient();
-//    String accessTokenUrl = "https://github.com/login/oauth/access_token";
+    // Client client = ClientBuilder.newClient();
+    // String accessTokenUrl = "https://github.com/login/oauth/access_token";
     DatastoreService datastore;
     GitHubClient gitClient;
-    
-    
+
     public AuthResource() {
         super();
-        gitClient  = new GitHubClient();
-        datastore =  DatastoreServiceFactory.getDatastoreService();
+        gitClient = new GitHubClient();
+        datastore = DatastoreServiceFactory.getDatastoreService();
     }
 
     @POST
@@ -59,28 +57,30 @@ public class AuthResource {
             @Context HttpServletResponse currentResponse, OAuthTokenModel model) throws IOException {
         gitClient.setOAuth2Token(model.getAccess_token());
         User u = new UserService(gitClient).getUser();
-       
+
         createOrUpdateUser(model, u);
-        //TODO NEED ADD ENCRYPTION HERE
-        return new OAuthResponseModel(new UserInfo(u.getId(), u.getAvatarUrl(), u.getName(), u.getUrl(),u.getEmail()), model.getAccess_token());
+        // TODO NEED ADD ENCRYPTION HERE
+        return new OAuthResponseModel(new UserInfo(u.getId(),u.getLogin(), u.getAvatarUrl(), u.getName(), u.getUrl(), u.getEmail()),
+                model.getAccess_token());
     }
 
-    /** 
+    /**
      * Description: Create/Update user
+     * 
      * @param model
      * @param u
      * @param key
-     * void
+     *            void
      */
     private void createOrUpdateUser(OAuthTokenModel model, User u) {
-        Key userKey = KeyFactory.createKey("User",u.getLogin());
+        Key userKey = KeyFactory.createKey("User", u.getLogin());
         Entity result = DatastoreUtils.getOneResultByKey(datastore, userKey);
         // User exists
         if (result == null) {
             result = new Entity("User", u.getLogin());
         }
         // Not exist before, create
-        
+
         updateEntityWithGithubModelAndToken(result, u, model.getAccess_token());
         datastore.put(result);
 
@@ -96,14 +96,14 @@ public class AuthResource {
      */
     private void updateEntityWithGithubModelAndToken(Entity e, User g, String builderToken) {
         e.setProperty("user_id", g.getId());
-        e.setProperty("login",g.getLogin());
+        e.setProperty("login", g.getLogin());
         e.setProperty("builderToken", builderToken);
         e.setProperty("url", g.getUrl());
         e.setProperty("name", g.getName());
         e.setProperty("avatar_url", g.getAvatarUrl());
         e.setProperty("email", g.getEmail());
     }
-    
+
     public static class OAuthTokenModel {
         private String access_token;
         private String token_type;
@@ -167,26 +167,33 @@ public class AuthResource {
 
         public static class UserInfo {
             private long id;
+            private String userLogin;
             private String avatar_url;
             private String name;
             private String url;
             private String email;
 
-            
-            public UserInfo(long id, String avatar_url, String name, String url, String email) {
+            public UserInfo(long id, String userLogin, String avatar_url, String name, String url, String email) {
                 super();
                 this.id = id;
+                this.userLogin = userLogin;
                 this.avatar_url = avatar_url;
                 this.name = name;
                 this.url = url;
                 this.email = email;
             }
-            
 
             public UserInfo() {
                 super();
             }
 
+            public String getUserLogin() {
+                return userLogin;
+            }
+
+            public void setUserLogin(String userLogin) {
+                this.userLogin = userLogin;
+            }
 
             public long getId() {
                 return id;

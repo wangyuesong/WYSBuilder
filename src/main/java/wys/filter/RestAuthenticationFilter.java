@@ -64,6 +64,10 @@ public class RestAuthenticationFilter implements Filter {
 //                }
 //            }
 //        }
+        HttpServletResponse servletResponse = (HttpServletResponse)response;
+        servletResponse.addHeader("Access-Control-Allow-Origin", "*");
+        servletResponse.addHeader("Access-Control-Allow-Headers", "X-Requested-With,Content-Type,Accept,Origin,Authentication");
+        servletResponse.addHeader("Access-Control-Allow-Methods", "GET,POST,HEAD,PUT,DELETE");
         filter.doFilter(request, response);
     }
 
