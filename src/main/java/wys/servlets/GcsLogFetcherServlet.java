@@ -91,7 +91,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
                 e.printStackTrace();
             }
             queueService.add(TaskOptions.Builder
-                    .withUrl(objectPathString).
+                    .withUrl("/" + objectPathString).
                     param("jenkinsLogUrl", jenkinsLogUrl).
                     param("interval", "5000").
                     param("currentOffset", "0").
@@ -104,7 +104,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
         try {
             // Update build status in jenkins
             jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
-            Job job = jenkins.getJob(objectPathString);
+            Job job = jenkins.getJob(objectPath.getBuildName());
             Key parentKey = KeyFactory.createKey("User", objectPath.getUserLogin());
             Key childKey = KeyFactory.createKey(parentKey, "Repository", objectPath.getRepoName());
             Key grandChildKey = KeyFactory.createKey(childKey, "Build", objectPath.getBuildName());
@@ -141,7 +141,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
         // Still more log, Invoke another request
         if (response.getHeaderString("X-More-Data") != null) {
             queueService.add(TaskOptions.Builder
-                    .withUrl(objectPathString).
+                    .withUrl("/" + objectPathString).
                     param("jenkinsLogUrl", jenkinsLogUrl).
                     param("interval", "5000").
                     param("currentOffset", xTextSize).
