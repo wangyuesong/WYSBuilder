@@ -91,7 +91,9 @@ public class GcsLogFetcherServlet extends HttpServlet {
                 e.printStackTrace();
             }
             queueService.add(TaskOptions.Builder
-                    .withUrl("/" + objectPathString).
+                    .withUrl(
+                            Constants.getLogFecthWorkerUrl(objectPath.getUserLogin(), objectPath.getRepoName(),
+                                    objectPath.getBuildName())).
                     param("jenkinsLogUrl", jenkinsLogUrl).
                     param("interval", "5000").
                     param("currentOffset", "0").
@@ -108,7 +110,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
             Key parentKey = KeyFactory.createKey("User", objectPath.getUserLogin());
             Key childKey = KeyFactory.createKey(parentKey, "Repository", objectPath.getRepoName());
             Key grandChildKey = KeyFactory.createKey(childKey, "Build", objectPath.getBuildName());
-            
+
             Entity buildEntity = datastore.get(grandChildKey);
             if (buildEntity != null) {
                 if (job != null) {
@@ -143,7 +145,8 @@ public class GcsLogFetcherServlet extends HttpServlet {
         // Still more log, Invoke another request
         if (response.getHeaderString("X-More-Data") != null) {
             queueService.add(TaskOptions.Builder
-                    .withUrl("/" + objectPathString).
+                    .withUrl(Constants.getLogFecthWorkerUrl(objectPath.getUserLogin(), objectPath.getRepoName(),
+                            objectPath.getBuildName())).
                     param("jenkinsLogUrl", jenkinsLogUrl).
                     param("interval", "5000").
                     param("currentOffset", xTextSize).
@@ -158,7 +161,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
     }
 
     private GCSObjectPath getObjectPath(HttpServletRequest req) {
-        String[] splits = req.getRequestURI().split("/",5);
+        String[] splits = req.getRequestURI().split("/", 5);
         for (int i = 0; i < splits.length; i++) {
             System.out.println(splits[i]);
         }

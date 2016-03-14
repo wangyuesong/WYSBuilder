@@ -63,8 +63,8 @@ public class Constants {
         return hookReceiverUrl;
     }
 
-    public static String getLogFecthWorkerUrl(String userLogin, String repoName, String jobName) {
-        return "/gcs/" + userLogin + "/" + repoName + "/" + jobName;
+    public static String getLogFecthWorkerUrl(String userLogin, String repoName, String commitHash) {
+        return "/gcs/" + userLogin + "/" + repoName + "/" + commitHash;
     }
 
     public static String getBuildWorkerUrl() {
