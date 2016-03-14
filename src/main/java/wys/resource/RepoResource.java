@@ -22,6 +22,7 @@ import wys.pojos.hookpayload.HookPayload;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
+import wys.utils.WebhookUtils;
 import wys.viewmodel.RepositoryModel;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -155,7 +156,7 @@ public class RepoResource {
             HookPayload payload) {
         logger.info("Request received");
         
-        String serverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort();
+        String serverUrl = WebhookUtils.getServerAddress(request);
         WebTarget target = client.target(serverUrl);
         try {
             Response response = target
