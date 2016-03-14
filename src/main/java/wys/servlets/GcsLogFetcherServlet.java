@@ -50,7 +50,7 @@ import com.sun.istack.logging.Logger;
  * @date Mar 11, 2016 11:57:17 PM
  * @version V1.0
  */
-public class GcsExampleServlet extends HttpServlet {
+public class GcsLogFetcherServlet extends HttpServlet {
     /**
      * 
      */
@@ -61,11 +61,10 @@ public class GcsExampleServlet extends HttpServlet {
     private WebTarget target;
     private Client client;
     private Queue queueService = QueueFactory.getDefaultQueue();;
-    private static Logger logger = Logger.getLogger(GcsExampleServlet.class);
+    private static Logger logger = Logger.getLogger(GcsLogFetcherServlet.class);
     private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     private static final long serialVersionUID = 1L;
-
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -158,6 +157,9 @@ public class GcsExampleServlet extends HttpServlet {
 
     private GCSObjectPath getObjectPath(HttpServletRequest req) {
         String[] splits = req.getRequestURI().split("/");
+        for (int i = 0; i < splits.length; i++) {
+            System.out.println(splits[i]);
+        }
         if (!splits[0].equals("") || !splits[1].equals("gcs")) {
             throw new IllegalArgumentException("The URL is not formed as expected. " +
                     "Expecting /gcs/<bucket>/<object>");

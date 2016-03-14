@@ -212,8 +212,8 @@ public class BuildResource {
 
     /**
      * 
-     * Description: Get one build's log detail from GCS
-     * 
+     * Description: Get one build's log detail from GCS(for log) and Datastore(for status)
+     *  
      * @param buildName
      * @return
      * @throws IOException
@@ -226,7 +226,7 @@ public class BuildResource {
     public Response getOneBuildDetail(@HeaderParam("Authentication") String headerToken,
             @PathParam("buildName") String buildName) throws IOException, EntityNotFoundException,
             GeneralSecurityException {
-        logger.info("Fetch Build log: " + userLogin + "/" + repoName + "/" + buildName);
+        logger.info("Fetch Build log from Datastore: " + userLogin + "/" + repoName + "/" + buildName);
         String objectPath = userLogin + "/" + repoName + "/" + buildName;
         HashMap<String, String> result = new HashMap<String, String>();
 
@@ -236,10 +236,12 @@ public class BuildResource {
             result.put("log", "");
             return Response.ok().entity(result).build();
         }
-
+        
+        //Get log from GCS
         ByteArrayOutputStream byteOutputStream = CloudStorageUtils.getObject(objectPath);
         result.put("log", new String(byteOutputStream.toByteArray(), "UTF-8"));
 
+        //Get status from datastore
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
         Key grandChildKey = KeyFactory.createKey(childKey, "Build", buildName);

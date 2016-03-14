@@ -24,7 +24,7 @@
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>GCS Servlet</servlet-name>
-		<servlet-class>wys.servlets.GcsExampleServlet</servlet-class>
+		<servlet-class>wys.servlets.GcsLogFetcherServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>GCS Servlet</servlet-name>
