@@ -103,10 +103,11 @@ public class HookResource {
         // Call Github Webhook API to add hook
         // FIXME Need refactor
 
-        String hookReceiverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-                request.getRequestURI().replace("hook", "hookReceiver");
+        String hookReceiverUrl = request.getScheme() + "://" + (request.getLocalAddr() != null ? request.getLocalAddr()
+                : request.getServerName()) + ":" + request.getServerPort() +
+                        request.getRequestURI().replace("hook", "hookReceiver");
         AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
-        
+
         // Receive response and save it to Repository model in datastore
         EmbeddedEntity hookEntity = new EmbeddedEntity();
         GithubModelToEntityUtils.convertAddhookResponseModelToEntity(hookResponse, hookEntity);
@@ -142,7 +143,6 @@ public class HookResource {
         }
         gitClient.setOAuth2Token(headerToken);
 
-
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
         Entity entity = datastore.get(childKey);
@@ -158,7 +158,7 @@ public class HookResource {
         // Invalidate cache
         syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
         syncCache.delete(DatastoreUtils.getUserReposCacheKey(userLogin));
-        
+
         logger.info("Hook deleted for" + userLogin + "/" + repoName);
 
         return Response.ok().entity("Webhook deleted").build();
