@@ -103,9 +103,10 @@ public class HookResource {
         // Call Github Webhook API to add hook
         // FIXME Need refactor
 
-        String hookReceiverUrl = request.getScheme() + "://" + (request.getLocalAddr() != null ? request.getLocalAddr()
-                : request.getServerName()) + ":" + request.getServerPort() +
-                        request.getRequestURI().replace("hook", "hookReceiver");
+        String hookReceiverUrl = request.getScheme() + "://"
+                + (request.getLocalAddr() != null ? (request.getLocalAddr() + ":" + request.getServerPort())
+                        : request.getServerName()) +
+                request.getRequestURI().replace("hook", "hookReceiver");
         AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
 
         // Receive response and save it to Repository model in datastore
