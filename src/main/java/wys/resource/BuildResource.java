@@ -139,6 +139,7 @@ public class BuildResource {
 
         String ref = payload.getRef();
         String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
+        
 
         String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromCommitHash(commitHash);
         String serverUrl = Constants.getServerAddress(request);
