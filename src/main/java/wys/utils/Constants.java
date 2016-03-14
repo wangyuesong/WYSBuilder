@@ -30,7 +30,7 @@ public class Constants {
      * @return
      *         String
      */
-    public final static String getJenkinsBuildLogUrlFromJobName(String jobName) {
+    public final static String getJenkinsBuildLogUrlFromCommitHash(String jobName) {
         // FIXME not sure if /1/ is ok
         return Constants.JENKINS_SERVER_JOB_API_ENDPOINT + "/" + jobName + "/1/" + "logText/progressiveHtml";
     }

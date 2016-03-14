@@ -156,7 +156,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
     }
 
     private GCSObjectPath getObjectPath(HttpServletRequest req) {
-        String[] splits = req.getRequestURI().split("/");
+        String[] splits = req.getRequestURI().split("/",5);
         for (int i = 0; i < splits.length; i++) {
             System.out.println(splits[i]);
         }

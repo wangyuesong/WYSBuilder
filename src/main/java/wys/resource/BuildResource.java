@@ -116,8 +116,6 @@ public class BuildResource {
         // }
         gitClient.setOAuth2Token(headerToken);
 
-        // Job name is userLogin + repoName + buildName(head commit's id)
-        String jobName = userLogin + "/" + repoName + "/" + payload.getHeadCommit().getId();
         String projectUrl = payload.getRepository().getUrl();
         String url = payload.getRepository().getSshUrl();
         String commitMessage = payload.getHeadCommit().getMessage();
@@ -142,10 +140,10 @@ public class BuildResource {
         String ref = payload.getRef();
         String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
 
-        String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromJobName(jobName);
+        String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromCommitHash(commitHash);
         String serverUrl = Constants.getServerAddress(request);
         String gcsLogPath = Constants.getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(userLogin, repoName,
-                jobName, serverUrl);
+                commitHash, serverUrl);
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
@@ -164,7 +162,7 @@ public class BuildResource {
         build.setProperty("duration", "");
 
         // Add fecth log job
-        queueService.add(TaskOptions.Builder.withUrl(Constants.getLogFecthWorkerUrl(userLogin, repoName, jobName)).
+        queueService.add(TaskOptions.Builder.withUrl(Constants.getLogFecthWorkerUrl(userLogin, repoName, commitHash)).
                 param("jenkinsLogUrl", jenkinsLogUrl).
                 param("interval", "5000").
                 param("currentOffset", "0").
@@ -213,7 +211,7 @@ public class BuildResource {
     /**
      * 
      * Description: Get one build's log detail from GCS(for log) and Datastore(for status)
-     *  
+     * 
      * @param buildName
      * @return
      * @throws IOException
@@ -236,12 +234,12 @@ public class BuildResource {
             result.put("log", "");
             return Response.ok().entity(result).build();
         }
-        
-        //Get log from GCS
+
+        // Get log from GCS
         ByteArrayOutputStream byteOutputStream = CloudStorageUtils.getObject(objectPath);
         result.put("log", new String(byteOutputStream.toByteArray(), "UTF-8"));
 
-        //Get status from datastore
+        // Get status from datastore
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
         Key grandChildKey = KeyFactory.createKey(childKey, "Build", buildName);
