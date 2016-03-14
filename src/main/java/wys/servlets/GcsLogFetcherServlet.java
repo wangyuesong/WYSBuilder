@@ -108,6 +108,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
             Key parentKey = KeyFactory.createKey("User", objectPath.getUserLogin());
             Key childKey = KeyFactory.createKey(parentKey, "Repository", objectPath.getRepoName());
             Key grandChildKey = KeyFactory.createKey(childKey, "Build", objectPath.getBuildName());
+            
             Entity buildEntity = datastore.get(grandChildKey);
             if (buildEntity != null) {
                 if (job != null) {
@@ -118,6 +119,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
                     }
                 }
             }
+            logger.info("Jenkins server already have log. Fetch now");
             result = response.readEntity(String.class);
 
             // Wait for a while
