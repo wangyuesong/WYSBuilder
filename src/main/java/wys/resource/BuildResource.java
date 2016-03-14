@@ -3,6 +3,7 @@ package wys.resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
@@ -29,10 +29,15 @@ import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
-import wys.utils.WebhookUtils;
 import wys.viewmodel.BuildModel;
 
-import com.google.api.client.util.store.DataStoreUtils;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.storage.Storage;
+import com.google.api.services.storage.StorageScopes;
 import com.google.appengine.api.ThreadManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -48,13 +53,6 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Method;
-import com.google.appengine.tools.cloudstorage.GcsFileOptions;
-import com.google.appengine.tools.cloudstorage.GcsFilename;
-import com.google.appengine.tools.cloudstorage.GcsInputChannel;
-import com.google.appengine.tools.cloudstorage.GcsOutputChannel;
-import com.google.appengine.tools.cloudstorage.GcsService;
-import com.google.appengine.tools.cloudstorage.GcsServiceFactory;
-import com.google.appengine.tools.cloudstorage.RetryParams;
 import com.offbytwo.jenkins.model.BuildResult;
 import com.sun.istack.logging.Logger;
 
@@ -78,7 +76,6 @@ public class BuildResource {
     RepositoryService repositoryService;
     UserService userService;
     ThreadFactory threadFactory;
-    private final GcsService gcsService;
 
     private static Logger logger = Logger.getLogger(BuildResource.class);
 
@@ -92,11 +89,11 @@ public class BuildResource {
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
         threadFactory = ThreadManager.currentRequestThreadFactory();
-        gcsService = GcsServiceFactory.createGcsService(new RetryParams.Builder()
-                .initialRetryDelayMillis(10)
-                .retryMaxAttempts(10)
-                .totalRetryPeriodMillis(15000)
-                .build());
+        // gcsService = GcsServiceFactory.createGcsService(new RetryParams.Builder()
+        // .initialRetryDelayMillis(10)
+        // .retryMaxAttempts(10)
+        // .totalRetryPeriodMillis(15000)
+        // .build());
         this.userLogin = userLogin;
         this.repoName = repoName;
     }
@@ -119,8 +116,8 @@ public class BuildResource {
         // }
         gitClient.setOAuth2Token(headerToken);
 
-
-        String jobName = payload.getHeadCommit().getId();
+        // Job name is userLogin + repoName + buildName(head commit's id)
+        String jobName = userLogin + "/" + repoName + "/" + payload.getHeadCommit().getId();
         String projectUrl = payload.getRepository().getUrl();
         String url = payload.getRepository().getSshUrl();
         String commitMessage = payload.getHeadCommit().getMessage();
@@ -128,18 +125,17 @@ public class BuildResource {
         String commitTime = payload.getHeadCommit().getTimestamp();
         String commitUrl = payload.getHeadCommit().getUrl();
 
-        String credentialsId = "03f2a0cf-a27a-44bd-912f-b5c3e9c5117a";
-        String targets = "clean install";
-        // Actually it's commit id
-        String branch = payload.getHeadCommit().getId();
+        String credentialsId = Constants.getCredentialsId();
+        String targets = Constants.getTargets();
+        String commitHash = payload.getHeadCommit().getId() + "";
 
-        // Add build job
-        queueService.add(TaskOptions.Builder.withUrl("/doBuild").
-                param("jobName", jobName).
+        // Add build job, jobName is just commitHash
+        queueService.add(TaskOptions.Builder.withUrl(Constants.getBuildWorkerUrl()).
+                param("jobName", commitHash).
                 param("projectUrl", projectUrl).
                 param("url", url).
                 param("targets", targets).
-                param("branch", branch + "").
+                param("commitHash", commitHash).
                 param("credentialsId", credentialsId).
                 method(Method.POST));
 
@@ -153,10 +149,10 @@ public class BuildResource {
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-        Key grandChildKey = KeyFactory.createKey(childKey, "Build", payload.getHeadCommit().getId());
+        Key grandChildKey = KeyFactory.createKey(childKey, "Build", commitHash);
 
         Entity build = new Entity(grandChildKey);
-        build.setProperty("name", jobName);
+        build.setProperty("name", commitHash);
         build.setProperty("branch", buildBranch);
         build.setProperty("jenkins_log_url", jenkinsLogUrl);
         build.setProperty("gcs_log_path", gcsLogPath);
@@ -168,12 +164,11 @@ public class BuildResource {
         build.setProperty("duration", "");
 
         // Add fecth log job
-        queueService.add(TaskOptions.Builder.withUrl("/gcs/" + repoName + "/" + jobName).
+        queueService.add(TaskOptions.Builder.withUrl(Constants.getLogFecthWorkerUrl(userLogin, repoName, jobName)).
                 param("jenkinsLogUrl", jenkinsLogUrl).
                 param("interval", "5000").
                 param("currentOffset", "0").
                 // Job full path is used for worker to update job status when finished
-                param("jobFullPath", userLogin + "/" + repoName + "/" + jobName).
                 method(Method.POST));
 
         datastore.put(build);
@@ -197,7 +192,6 @@ public class BuildResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
-
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
@@ -225,38 +219,36 @@ public class BuildResource {
      * @throws IOException
      *             Response
      * @throws EntityNotFoundException
+     * @throws GeneralSecurityException
      */
     @GET
     @Path("/{buildName}")
     public Response getOneBuildDetail(@HeaderParam("Authentication") String headerToken,
-            @PathParam("buildName") String buildName) throws IOException, EntityNotFoundException {
-        logger.info("Fetch Build log:" + buildName); 
+            @PathParam("buildName") String buildName) throws IOException, EntityNotFoundException,
+            GeneralSecurityException {
+        logger.info("Fetch Build log: " + userLogin + "/" + repoName + "/" + buildName);
+        String objectPath = userLogin + "/" + repoName + "/" + buildName;
         HashMap<String, String> result = new HashMap<String, String>();
-        GcsFilename fileName = new GcsFilename(repoName, buildName);
-        
-        //If cannot find such file, means the log is not ready, tell client to retry
-        if (gcsService.getMetadata(fileName) == null) {
+
+        // If cannot find such file, means the log is not ready, tell client to retry
+        if (!CloudStorageUtils.isObjectExist(objectPath)) {
             result.put("status", "LOG_NOT_AVAILABLE");
             result.put("log", "");
             return Response.ok().entity(result).build();
         }
 
-        GcsInputChannel readChannel = gcsService.openPrefetchingReadChannel(fileName, 0, CloudStorageUtils.BUFFER_SIZE);
-        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        CloudStorageUtils.copy(Channels.newInputStream(readChannel), byteOutputStream);
-       
+        ByteArrayOutputStream byteOutputStream = CloudStorageUtils.getObject(objectPath);
         result.put("log", new String(byteOutputStream.toByteArray(), "UTF-8"));
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
         Key grandChildKey = KeyFactory.createKey(childKey, "Build", buildName);
-        
+
         Entity e = DatastoreUtils.getOneResultByKey(datastore, grandChildKey);
         if (e != null) {
             result.put("status", (String) e.getProperty("status"));
-            
         }
-        else{
+        else {
             result.put("status", BuildResult.UNKNOWN.toString());
         }
         return Response.ok().entity(result).build();

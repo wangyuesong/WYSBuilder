@@ -63,11 +63,11 @@ public class BuilderWorkerServlet extends HttpServlet {
         String url = request.getParameter("url");
         String credentialsId = request.getParameter("credentialsId");
         String targets = request.getParameter("targets");
-        String branch = request.getParameter("branch");
+        String commitHash = request.getParameter("commitHash");
         
         ServletContext context = getServletContext();
         try {
-            ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, branch);
+            ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, commitHash);
             JenkinsServer jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
             logger.info("About to create job: " + jobName);
             jenkins.createJob(
@@ -94,7 +94,7 @@ public class BuilderWorkerServlet extends HttpServlet {
     public static ByteArrayOutputStream createDom(ServletContext context, String p_projectUrl, String p_url,
             String p_credentialsId,
             String p_targets,
-            String p_branch) throws ParserConfigurationException, SAXException, IOException, TransformerException,
+            String p_commitHash) throws ParserConfigurationException, SAXException, IOException, TransformerException,
             URISyntaxException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -118,7 +118,7 @@ public class BuilderWorkerServlet extends HttpServlet {
 
         Node branch = doc.getElementsByTagName("name").item(0);
         // branch.setTextContent("/refs/heads/master");
-        branch.setTextContent(p_branch);
+        branch.setTextContent(p_commitHash);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();

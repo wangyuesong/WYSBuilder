@@ -43,12 +43,12 @@ public class Constants {
      * @return
      *         String
      */
-    public static String getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(String userLogin,String repoName, String jobName,
+    public static String getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(String userLogin, String repoName,
+            String jobName,
             String serverUrl) {
         return serverUrl + "/rest/" + userLogin + "/" + repoName + "/" + jobName;
     }
-    
-    
+
     /**
      * Description: Generate current server location by request
      * 
@@ -61,5 +61,27 @@ public class Constants {
                 + (request.getLocalAddr() != null ? (request.getLocalAddr() + ":" + request.getServerPort())
                         : request.getServerName());
         return hookReceiverUrl;
+    }
+
+    public static String getLogFecthWorkerUrl(String userLogin, String repoName, String jobName) {
+        return "/gcs/" + userLogin + "/" + repoName + "/" + jobName;
+    }
+
+    public static String getBuildWorkerUrl() {
+        return "/doBuild";
+    }
+    
+    public static String getCredentialsId(){
+        return "03f2a0cf-a27a-44bd-912f-b5c3e9c5117a";
+    }
+
+    /** 
+     * Description: TODO
+     * @return
+     * String
+     */
+    public static String getTargets() {
+        // TODO Auto-generated method stub
+        return "clean install";
     }
 }
