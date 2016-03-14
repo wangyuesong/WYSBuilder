@@ -29,6 +29,7 @@ import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
+import wys.utils.WebhookUtils;
 import wys.viewmodel.BuildModel;
 
 import com.google.api.client.util.store.DataStoreUtils;
@@ -146,7 +147,7 @@ public class BuildResource {
         String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
 
         String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromJobName(jobName);
-        String serverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort();
+        String serverUrl = Constants.getServerAddress(request);
         String gcsLogPath = Constants.getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(userLogin, repoName,
                 jobName, serverUrl);
 

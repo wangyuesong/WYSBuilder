@@ -19,10 +19,10 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import wys.pojos.hookpayload.HookPayload;
+import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
-import wys.utils.WebhookUtils;
 import wys.viewmodel.RepositoryModel;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -88,7 +88,7 @@ public class RepoResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
-        
+
         Entity entity = null;
         String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName);
         Object cacheResult = syncCache.get(reposCacheKey);
@@ -155,8 +155,8 @@ public class RepoResource {
             @PathParam("repoName") String repoName, @Context HttpServletRequest request,
             HookPayload payload) {
         logger.info("Request received");
-        
-        String serverUrl = WebhookUtils.getServerAddress(request);
+
+        String serverUrl = Constants.getServerAddress(request);
         WebTarget target = client.target(serverUrl);
         try {
             Response response = target

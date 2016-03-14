@@ -2,6 +2,8 @@ package wys.utils;
 
 import java.net.URI;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.offbytwo.jenkins.JenkinsServer;
 
 /**
@@ -44,5 +46,20 @@ public class Constants {
     public static String getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(String userLogin,String repoName, String jobName,
             String serverUrl) {
         return serverUrl + "/rest/" + userLogin + "/" + repoName + "/" + jobName;
+    }
+    
+    
+    /**
+     * Description: Generate current server location by request
+     * 
+     * @param request
+     * @return
+     *         String
+     */
+    public static String getServerAddress(HttpServletRequest request) {
+        String hookReceiverUrl = request.getScheme() + "://"
+                + (request.getLocalAddr() != null ? (request.getLocalAddr() + ":" + request.getServerPort())
+                        : request.getServerName());
+        return hookReceiverUrl;
     }
 }

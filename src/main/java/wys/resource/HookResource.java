@@ -19,6 +19,7 @@ import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
+import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.GithubModelToEntityUtils;
 import wys.utils.HeaderUtils;
@@ -103,7 +104,7 @@ public class HookResource {
         // Call Github Webhook API to add hook
         // FIXME Need refactor
 
-        String hookReceiverUrl = WebhookUtils.getServerAddress(request) +  request.getRequestURI().replace("hook", "hookReceiver");
+        String hookReceiverUrl = Constants.getServerAddress(request) +  request.getRequestURI().replace("hook", "hookReceiver");
         
         AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
 

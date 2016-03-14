@@ -22,19 +22,7 @@ import wys.resource.RepoResource;
  */
 public class WebhookUtils {
 
-    /**
-     * Description: TODO
-     * 
-     * @param request
-     * @return
-     *         String
-     */
-    public static String getServerAddress(HttpServletRequest request) {
-        String hookReceiverUrl = request.getScheme() + "://"
-                + (request.getLocalAddr() != null ? (request.getLocalAddr() + ":" + request.getServerPort())
-                        : request.getServerName());
-        return hookReceiverUrl;
-    }
+  
 
     /**
      * Description: Stupid method to create webhook
