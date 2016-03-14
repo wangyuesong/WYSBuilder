@@ -35,6 +35,7 @@ import com.google.appengine.tools.cloudstorage.GcsService;
 import com.google.appengine.tools.cloudstorage.GcsServiceFactory;
 import com.google.appengine.tools.cloudstorage.RetryParams;
 import com.offbytwo.jenkins.JenkinsServer;
+import com.offbytwo.jenkins.model.BuildResult;
 import com.offbytwo.jenkins.model.Job;
 import com.sun.istack.logging.Logger;
 
@@ -110,6 +111,32 @@ public class GcsExampleServlet extends HttpServlet {
                     method(Method.POST));
         }
         else {
+            //Update build status in datastore
+            JenkinsServer jenkins;
+            try {
+                String[] jobPath = jobFullPath.split("/");
+                jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
+                Job job = jenkins.getJob(fileName.getObjectName());
+                Key parentKey = KeyFactory.createKey("User", jobPath[0]);
+                Key childKey = KeyFactory.createKey(parentKey, "Repository", jobPath[1]);
+                Key grandChildKey = KeyFactory.createKey(childKey, "Build", jobPath[2]);
+                Entity buildEntity = datastore.get(grandChildKey);
+                if(buildEntity != null){
+                    if(job != null){
+                        BuildResult buildResult = job.details().getLastBuild().details().getResult();
+                        if(buildResult != null){
+                            buildEntity.setProperty("status", buildResult.toString());
+                            datastore.put(buildEntity);
+                        }
+                    }
+                }
+                
+                
+            } catch (URISyntaxException | EntityNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
             result = response.readEntity(String.class);
             try {
                 Thread.sleep(interval);
@@ -128,25 +155,9 @@ public class GcsExampleServlet extends HttpServlet {
                         param("currentOffset", xTextSize).
                         method(Method.POST));
             }
-            // No more log, update build status in datastore
+            // No more log
             else {
-                JenkinsServer jenkins;
-                try {
-                    String[] jobPath = jobFullPath.split("/");
-                    jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
-                    Job job = jenkins.getJob(fileName.getObjectName());
-                    Key parentKey = KeyFactory.createKey("User", jobPath[0]);
-                    Key childKey = KeyFactory.createKey(parentKey, "Repository", jobPath[1]);
-                    Key grandChildKey = KeyFactory.createKey(childKey, "Build", jobPath[2]);
-                    Entity buildEntity = datastore.get(grandChildKey);
-                    buildEntity.setProperty("status", job.details().getLastBuild().details().getResult());
-                } catch (URISyntaxException | EntityNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
                 logger.info("Fetching job final result: " + fileName.getObjectName());
-               
-                
                 logger.info("Finished retriving log");
                 
             }
