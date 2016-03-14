@@ -84,6 +84,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
 
         // Server not started that job yet, retry
         if (xTextSize == null || xTextSize == "") {
+            
             try {
                 Thread.sleep(interval);
             } catch (InterruptedException e) {
