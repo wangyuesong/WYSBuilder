@@ -254,6 +254,7 @@ public class BuildResource {
         Entity e = DatastoreUtils.getOneResultByKey(datastore, grandChildKey);
         if (e != null) {
             result.put("status", (String) e.getProperty("status"));
+            
         }
         else{
             result.put("status", BuildResult.UNKNOWN.toString());
