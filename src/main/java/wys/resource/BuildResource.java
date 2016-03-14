@@ -116,6 +116,8 @@ public class BuildResource {
         // if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
         // return Response.status(Response.Status.UNAUTHORIZED).build();
         // }
+        gitClient.setOAuth2Token(headerToken);
+
 
         String jobName = payload.getHeadCommit().getId();
         String projectUrl = payload.getRepository().getUrl();
@@ -141,7 +143,7 @@ public class BuildResource {
                 method(Method.POST));
 
         String ref = payload.getRef();
-        String buildBranch = ref.substring(ref.lastIndexOf('/'));
+        String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
 
         String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromJobName(jobName);
         String serverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort();
@@ -193,6 +195,8 @@ public class BuildResource {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+        gitClient.setOAuth2Token(headerToken);
+
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);

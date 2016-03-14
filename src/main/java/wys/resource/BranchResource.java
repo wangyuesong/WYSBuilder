@@ -1,29 +1,34 @@
 package wys.resource;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.TypedResource;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.egit.github.core.service.UserService;
 
 import wys.utils.DatastoreUtils;
+import wys.utils.EntityToViewModelUtils;
 import wys.utils.GithubModelToEntityUtils;
 import wys.utils.HeaderUtils;
 import wys.utils.WebhookUtils;
 import wys.utils.WebhookUtils.AddhookResponse;
+import wys.viewmodel.BranchModel;
+import wys.viewmodel.BuildModel;
+import wys.viewmodel.RepositoryModel;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -34,6 +39,10 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.sun.istack.logging.Logger;
@@ -71,51 +80,64 @@ public class BranchResource {
         this.repoName = repoName;
     }
 
-    @SuppressWarnings("unchecked")
+    
     @GET
     public Response getOneRepoAllBranches(@HeaderParam("Authentication") String headerToken) throws IOException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-
-        List<Entity> entities = null;
-        // Repo cache key
-        String reposCacheKey = DatastoreUtils.getUserOneRepoBranchesCacheKey(userLogin, repoName);
-        Object cacheResult = syncCache.get(reposCacheKey);
-
-        if (cacheResult != null) {
-            logger.info("Repos fetch from cache");
-            entities = (List<Entity>) cacheResult;
-        }
-        else {
-            Key parentKey = KeyFactory.createKey("User", userLogin);
-            Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-            Query query = new Query("Repository").setAncestor(childKey);
-            entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-            syncCache.put(reposCacheKey, entities);
-        }
-
-        return Response.ok().entity(entities).build();
-    }
-
-    @SuppressWarnings("unchecked")
-    @PUT
-    public Response syncOneRepoAllBranches(@HeaderParam("Authentication") String headerToken) throws IOException
-    {
-        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+        gitClient.setOAuth2Token(headerToken);
 
         Repository repository = repositoryService.getRepository(userLogin, repoName);
         List<RepositoryBranch> branches = repositoryService.getBranches(repository);
-
+        
+        List<BranchModel> returnModels = new ArrayList<BranchModel>();
         for (RepositoryBranch branch : branches) {
-            TypedResource commit = branch.getCommit();
-            // commit.
+            Key parentKey = KeyFactory.createKey("User", userLogin);
+            Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
+            Filter keyFilter = new FilterPredicate("branch", FilterOperator.EQUAL, branch.getName());
+            Query q = new Query("Build").setAncestor(childKey).setFilter(keyFilter)
+                    .addSort("commit_time", SortDirection.DESCENDING);
+            List<Entity> builds = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+            List<BuildModel> buildModels = new ArrayList<BuildModel>();
+            // Get lastest 5 builds
+            for (int i = 0; i < (builds.size() > 5 ? 5 : builds.size()); i++) {
+                BuildModel model = new BuildModel();
+                EntityToViewModelUtils.convertEntityToBuildModel(builds.get(i), model);
+                buildModels.add(model);
+            }
+            BranchModel branchModel = new BranchModel();
+            branchModel.setBranch_name(branch.getName());
+            branchModel.setBuilds(buildModels);
+            returnModels.add(branchModel);
         }
-        return Response.ok().build();
+        
+        System.out.println(returnModels.size());
+        GenericEntity<List<BranchModel>> genericModels =
+                new GenericEntity<List<BranchModel>>(returnModels) {
+                };
+        return Response.ok().entity(genericModels).build();
     }
+
+    // @SuppressWarnings("unchecked")
+    // @PUT
+    // public Response syncOneRepoAllBranches(@HeaderParam("Authentication") String headerToken) throws IOException
+    // {
+    // if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
+    // return Response.status(Response.Status.UNAUTHORIZED).build();
+    // }
+    //
+    // Repository repository = repositoryService.getRepository(userLogin, repoName);
+    // List<RepositoryBranch> branches = repositoryService.getBranches(repository);
+    //
+    // for (RepositoryBranch branch : branches) {
+    // TypedResource commit = branch.getCommit();
+    //
+    // // commit.
+    // }
+    // return Response.ok().build();
+    // }
 
     /**
      * 

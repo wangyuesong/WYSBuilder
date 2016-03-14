@@ -140,6 +140,8 @@ public class HookResource {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+        gitClient.setOAuth2Token(headerToken);
+
 
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);

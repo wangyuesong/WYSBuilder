@@ -1,5 +1,7 @@
 package wys.viewmodel;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * @Project: wysbuilder
  * @Title: BuildModel.java
@@ -9,6 +11,7 @@ package wys.viewmodel;
  * @date Mar 12, 2016 4:19:49 AM
  * @version V1.0
  */
+@XmlRootElement
 public class BuildModel {
     private String name;
     private String branch;
