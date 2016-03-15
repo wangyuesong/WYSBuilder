@@ -201,7 +201,6 @@ public class BuildResource {
             BuildModel bm = new BuildModel();
             return Response.ok().entity(bm).build();
         }
-        System.out.println("sadfasdfsadfsadf");
         // Get most recent
         if (request.getParameter("mostRecent") != null && request.getParameter("mostRecent").equals("true")) {
             Entity e = results.get(0);
@@ -258,7 +257,7 @@ public class BuildResource {
 
         // Get log from GCS
         ByteArrayOutputStream byteOutputStream = CloudStorageUtils.getObject(objectPath);
-        result.setLog(new String(byteOutputStream.toByteArray(), "UTF-8"));
+        result.setLog(new String(byteOutputStream.toByteArray()));
 
         // Get status from datastore
         Key parentKey = KeyFactory.createKey("User", userLogin);
