@@ -92,7 +92,7 @@ public class RepoResource {
         Entity entity = null;
         String reposCacheKey = DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName);
         Object cacheResult = syncCache.get(reposCacheKey);
-
+        
         if (cacheResult != null) {
             logger.info("One repo fecth from cache");
             entity = (Entity) cacheResult;

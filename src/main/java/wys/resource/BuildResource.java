@@ -2,10 +2,9 @@ package wys.resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -15,9 +14,12 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -29,15 +31,9 @@ import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
+import wys.viewmodel.BuildDetailModel;
 import wys.viewmodel.BuildModel;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.storage.Storage;
-import com.google.api.services.storage.StorageScopes;
 import com.google.appengine.api.ThreadManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -89,11 +85,6 @@ public class BuildResource {
         repositoryService = new RepositoryService(gitClient);
         userService = new UserService(gitClient);
         threadFactory = ThreadManager.currentRequestThreadFactory();
-        // gcsService = GcsServiceFactory.createGcsService(new RetryParams.Builder()
-        // .initialRetryDelayMillis(10)
-        // .retryMaxAttempts(10)
-        // .totalRetryPeriodMillis(15000)
-        // .build());
         this.userLogin = userLogin;
         this.repoName = repoName;
     }
@@ -109,6 +100,7 @@ public class BuildResource {
      *         Response
      */
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     public Response addBuild(@HeaderParam("Authentication") String headerToken, HookPayload payload,
             @Context HttpServletRequest request) {
         // if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
@@ -121,6 +113,8 @@ public class BuildResource {
         String commitMessage = payload.getHeadCommit().getMessage();
         String commiter = payload.getHeadCommit().getCommitter().getName();
         String commitTime = payload.getHeadCommit().getTimestamp();
+        // String commitTime =
+        // DatastoreUtils.convertISO8601DateStringToddMMyyyy(payload.getHeadCommit().getTimestamp());
         String commitUrl = payload.getHeadCommit().getUrl();
 
         String credentialsId = Constants.getCredentialsId();
@@ -139,7 +133,6 @@ public class BuildResource {
 
         String ref = payload.getRef();
         String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
-        
 
         String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromCommitHash(commitHash);
         String serverUrl = Constants.getServerAddress(request);
@@ -177,26 +170,53 @@ public class BuildResource {
 
     /**
      * 
-     * Description: Get all one repository's all builds from datastore
+     * Description: Get all one repository's all builds from datastore.
+     * Or find the most recent build by giving paramter mostRecent=true
      * 
      * @param headerToken
      * @param request
      * @return
      *         Response
+     * @throws GeneralSecurityException 
+     * @throws EntityNotFoundException 
+     * @throws IOException 
      */
     @GET
-    public Response getAllBuilds(@HeaderParam("Authentication") String headerToken, @Context HttpServletRequest request)
+    @javax.ws.rs.Produces("")
+    public Response getAllBuilds(@HeaderParam("Authentication") String headerToken, @Context HttpServletRequest request) throws IOException, EntityNotFoundException, GeneralSecurityException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         gitClient.setOAuth2Token(headerToken);
-
         Key parentKey = KeyFactory.createKey("User", userLogin);
         Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
 
         Query buildsQuery = new Query("Build").setAncestor(childKey);
         List<Entity> results = datastore.prepare(buildsQuery).asList(FetchOptions.Builder.withDefaults());
+
+        // No builds available
+        if (results.size() == 0)
+        {
+            BuildModel bm = new BuildModel();
+            return Response.ok().entity(bm).build();
+        }
+        System.out.println("sadfasdfsadfsadf");
+        // Get most recent
+        if (request.getParameter("mostRecent") != null && request.getParameter("mostRecent").equals("true")) {
+            Entity e = results.get(0);
+            for (int i = 1; i < results.size(); i++) {
+                Date origin = DatatypeConverter.parseDateTime((String) e.getProperty("commit_time")).getTime();
+                Date another = DatatypeConverter.parseDate((String) results.get(i).getProperty("commit_time"))
+                        .getTime();
+                if (another.after(origin)) {
+                    e = results.get(i);
+                }
+            }
+
+            return getOneBuildDetail(headerToken, (String) e.getProperty("name"));
+        }
+
         List<BuildModel> buildModels = new ArrayList<BuildModel>();
         for (Entity e : results) {
             BuildModel b = new BuildModel();
@@ -227,18 +247,18 @@ public class BuildResource {
             GeneralSecurityException {
         logger.info("Fetch Build log from Datastore: " + userLogin + "/" + repoName + "/" + buildName);
         String objectPath = userLogin + "/" + repoName + "/" + buildName;
-        HashMap<String, String> result = new HashMap<String, String>();
+        BuildDetailModel result = new BuildDetailModel();
 
         // If cannot find such file, means the log is not ready, tell client to retry
         if (!CloudStorageUtils.isObjectExist(objectPath)) {
-            result.put("status", "LOG_NOT_AVAILABLE");
-            result.put("log", "");
+            result.setStatus("LOG_NOT_AVAILABLE");
+            result.setLog("");
             return Response.ok().entity(result).build();
         }
 
         // Get log from GCS
         ByteArrayOutputStream byteOutputStream = CloudStorageUtils.getObject(objectPath);
-        result.put("log", new String(byteOutputStream.toByteArray(), "UTF-8"));
+        result.setLog(new String(byteOutputStream.toByteArray(), "UTF-8"));
 
         // Get status from datastore
         Key parentKey = KeyFactory.createKey("User", userLogin);
@@ -247,11 +267,12 @@ public class BuildResource {
 
         Entity e = DatastoreUtils.getOneResultByKey(datastore, grandChildKey);
         if (e != null) {
-            result.put("status", (String) e.getProperty("status"));
+            result.setStatus((String) e.getProperty("status"));
         }
         else {
-            result.put("status", BuildResult.UNKNOWN.toString());
+            result.setStatus(BuildResult.UNKNOWN.toString());
         }
+
         return Response.ok().entity(result).build();
     }
 

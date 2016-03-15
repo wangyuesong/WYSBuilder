@@ -139,57 +139,5 @@ public class BranchResource {
     // return Response.ok().build();
     // }
 
-    /**
-     * 
-     * Description: Add webhook to github. Update Repository model to have hook info.
-     * 
-     * @param request
-     * @param headerToken
-     * @param repoName
-     * @return
-     * @throws EntityNotFoundException
-     * @throws IOException
-     *             Response
-     */
-
-    @POST
-    public Response addWebhook(@Context HttpServletRequest request,
-            @HeaderParam("Authentication") String headerToken)
-            throws EntityNotFoundException, IOException {
-        if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-        gitClient.setOAuth2Token(headerToken);
-        Repository repo = null;
-        List<Repository> repos = repositoryService.getRepositories();
-        for (Repository r : repos) {
-            if (r.getName().equals(repoName))
-                repo = r;
-        }
-        if (repo == null)
-            return Response.status(400).entity("No such repository").build();
-        User user = userService.getUser();
-        String userLogin = user.getLogin();
-
-        // Call Github Webhook API to add hook
-        // FIXME Need refactor
-
-        String hookReceiverUrl = "http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-                request.getRequestURI().replace("hook", "hookReceiver");
-        AddhookResponse hookResponse = WebhookUtils.addWebhook(hookReceiverUrl, headerToken, repoName, userLogin);
-
-        // Receive response and save it to Repository model in datastore
-        EmbeddedEntity hookEntity = new EmbeddedEntity();
-        GithubModelToEntityUtils.convertAddhookResponseModelToEntity(hookResponse, hookEntity);
-        Key parentKey = KeyFactory.createKey("User", userLogin);
-        Key childKey = KeyFactory.createKey(parentKey, "Repository", repoName);
-        Entity entity = datastore.get(childKey);
-        entity.setProperty("hook", hookEntity);
-        datastore.put(entity);
-        // Invalidate cache
-        syncCache.delete(DatastoreUtils.getUserOneRepoCacheKey(userLogin, repoName));
-        logger.info(userLogin + "/" + repoName + "add hook");
-        return Response.ok().entity("Webhook added").build();
-    }
 
 }
