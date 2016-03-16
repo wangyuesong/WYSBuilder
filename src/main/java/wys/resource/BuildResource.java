@@ -182,7 +182,7 @@ public class BuildResource {
      * @throws IOException 
      */
     @GET
-    @javax.ws.rs.Produces("")
+    @Produces("application/json")
     public Response getAllBuilds(@HeaderParam("Authentication") String headerToken, @Context HttpServletRequest request) throws IOException, EntityNotFoundException, GeneralSecurityException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {

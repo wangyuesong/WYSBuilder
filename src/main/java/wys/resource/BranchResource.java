@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
@@ -82,6 +83,7 @@ public class BranchResource {
 
     
     @GET
+    @Produces("application/json")
     public Response getOneRepoAllBranches(@HeaderParam("Authentication") String headerToken) throws IOException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
