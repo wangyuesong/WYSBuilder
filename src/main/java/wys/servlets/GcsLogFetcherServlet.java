@@ -136,7 +136,6 @@ public class GcsLogFetcherServlet extends HttpServlet {
             } else {
                 outputStream = new ByteArrayOutputStream();
             }
-            break the build
             outputStream.write(result.getBytes());
             CloudStorageUtils.uploadStream(objectPath, "text/plain",
                     new ByteArrayInputStream(outputStream.toByteArray()));

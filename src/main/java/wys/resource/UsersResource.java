@@ -142,6 +142,7 @@ public class UsersResource {
      *         RepoResource
      */
     @Path("/")
+    
     public RepoResource getOneRepo(@PathParam("userLogin") String userLogin) {
         return new RepoResource(userLogin);
     }
