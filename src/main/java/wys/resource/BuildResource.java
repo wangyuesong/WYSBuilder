@@ -177,13 +177,14 @@ public class BuildResource {
      * @param request
      * @return
      *         Response
-     * @throws GeneralSecurityException 
-     * @throws EntityNotFoundException 
-     * @throws IOException 
+     * @throws GeneralSecurityException
+     * @throws EntityNotFoundException
+     * @throws IOException
      */
     @GET
-    @javax.ws.rs.Produces("")
-    public Response getAllBuilds(@HeaderParam("Authentication") String headerToken, @Context HttpServletRequest request) throws IOException, EntityNotFoundException, GeneralSecurityException
+    @Produces("application/json")
+    public Response getAllBuilds(@HeaderParam("Authentication") String headerToken, @Context HttpServletRequest request)
+            throws IOException, EntityNotFoundException, GeneralSecurityException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -240,6 +241,7 @@ public class BuildResource {
      * @throws GeneralSecurityException
      */
     @GET
+    @Produces("application/json")
     @Path("/{buildName}")
     public Response getOneBuildDetail(@HeaderParam("Authentication") String headerToken,
             @PathParam("buildName") String buildName) throws IOException, EntityNotFoundException,

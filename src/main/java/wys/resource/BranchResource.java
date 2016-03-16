@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
@@ -80,8 +81,8 @@ public class BranchResource {
         this.repoName = repoName;
     }
 
-    
     @GET
+    @Produces("application/json")
     public Response getOneRepoAllBranches(@HeaderParam("Authentication") String headerToken) throws IOException
     {
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
@@ -91,7 +92,7 @@ public class BranchResource {
 
         Repository repository = repositoryService.getRepository(userLogin, repoName);
         List<RepositoryBranch> branches = repositoryService.getBranches(repository);
-        
+
         List<BranchModel> returnModels = new ArrayList<BranchModel>();
         for (RepositoryBranch branch : branches) {
             Key parentKey = KeyFactory.createKey("User", userLogin);
@@ -112,7 +113,7 @@ public class BranchResource {
             branchModel.setBuilds(buildModels);
             returnModels.add(branchModel);
         }
-        
+
         System.out.println(returnModels.size());
         GenericEntity<List<BranchModel>> genericModels =
                 new GenericEntity<List<BranchModel>>(returnModels) {
@@ -138,6 +139,5 @@ public class BranchResource {
     // }
     // return Response.ok().build();
     // }
-
 
 }
