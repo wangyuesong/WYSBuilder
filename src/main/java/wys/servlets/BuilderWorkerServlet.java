@@ -27,8 +27,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import wys.resource.HookResource;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.memcache.MemcacheService;
@@ -64,17 +62,25 @@ public class BuilderWorkerServlet extends HttpServlet {
         String credentialsId = request.getParameter("credentialsId");
         String targets = request.getParameter("targets");
         String commitHash = request.getParameter("commitHash");
-        
+        String jenkinsEndpointUrl = request.getParameter("jenkinsEndpointUrl");
+
         ServletContext context = getServletContext();
         try {
             ByteArrayOutputStream outputStream = createDom(context, projectUrl, url, credentialsId, targets, commitHash);
-            JenkinsServer jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
+            JenkinsServer jenkins = new JenkinsServer(new URI(jenkinsEndpointUrl), "", "");
+            
             logger.info("About to create job: " + jobName);
             jenkins.createJob(
                     jobName,
                     inputStream2String(new ByteArrayInputStream(outputStream.toByteArray())), false);
-            Job job = jenkins.getJob(jobName);
-            job.build(false);
+             Job job = jenkins.getJob(jobName);
+             System.out.println("Try to start jenkins build on:" + job.getUrl());
+             job.build(false);
+//            Client client = ClientBuilder.newClient();
+//            WebTarget target = client.target(Constants.JENKINS_SERVER_JOB_API_ENDPOINT + "/" + jobName + "/build");
+//            Response r = target
+//                    .request(MediaType.APPLICATION_JSON).post(null);
+//            System.out.println("Post status" + r.getStatus());
             
         } catch (Exception e) {
             e.printStackTrace();

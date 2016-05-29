@@ -22,8 +22,6 @@ import wys.resource.RepoResource;
  */
 public class WebhookUtils {
 
-  
-
     /**
      * Description: Stupid method to create webhook
      * 
@@ -100,6 +98,16 @@ public class WebhookUtils {
         private String active;
 
         private String url;
+
+        private String type;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
 
         public String getId()
         {

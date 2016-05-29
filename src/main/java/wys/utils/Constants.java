@@ -19,8 +19,8 @@ public class Constants {
     public final static String CLIENT_ID = "2dec25a28baf921db035";
     public final static String CLIENT_SECRET = "ef560b8ceed05ae3ecf4a8872877871e91871991";
     public final static String GITHUB_API_ENDPOINT = "https://api.github.com";
-    public final static String JENKINS_SERVER_API_ENDPOINT = "http://104.197.212.129";
-    public final static String JENKINS_SERVER_JOB_API_ENDPOINT = JENKINS_SERVER_API_ENDPOINT + "/job";
+//    public final static String JENKINS_SERVER_API_ENDPOINT = "http://128.111.84.178:8080";
+//    public final static String JENKINS_SERVER_JOB_API_ENDPOINT = JENKINS_SERVER_API_ENDPOINT + "/job";
 
     /**
      * 
@@ -30,9 +30,9 @@ public class Constants {
      * @return
      *         String
      */
-    public final static String getJenkinsBuildLogUrlFromCommitHash(String jobName) {
+    public final static String getJenkinsBuildLogUrlFromCommitHash(String jobName, String jenkinsUrl) {
         // FIXME not sure if /1/ is ok
-        return Constants.JENKINS_SERVER_JOB_API_ENDPOINT + "/" + jobName + "/1/" + "logText/progressiveHtml";
+        return jenkinsUrl + "/job/" + jobName + "/1/" + "logText/progressiveHtml";
     }
 
     /**
@@ -71,10 +71,7 @@ public class Constants {
         return "/doBuild";
     }
     
-    public static String getCredentialsId(){
-        return "03f2a0cf-a27a-44bd-912f-b5c3e9c5117a";
-    }
-
+   
     /** 
      * Description: TODO
      * @return

@@ -2,6 +2,7 @@ package wys.resource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +32,7 @@ import wys.utils.Constants;
 import wys.utils.DatastoreUtils;
 import wys.utils.EntityToViewModelUtils;
 import wys.utils.HeaderUtils;
+import wys.utils.JenkinsUtils;
 import wys.viewmodel.BuildDetailModel;
 import wys.viewmodel.BuildModel;
 
@@ -98,11 +100,12 @@ public class BuildResource {
      * @param request
      * @return
      *         Response
+     * @throws URISyntaxException 
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response addBuild(@HeaderParam("Authentication") String headerToken, HookPayload payload,
-            @Context HttpServletRequest request) {
+            @Context HttpServletRequest request) throws URISyntaxException {
         // if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
         // return Response.status(Response.Status.UNAUTHORIZED).build();
         // }
@@ -117,14 +120,22 @@ public class BuildResource {
         // DatastoreUtils.convertISO8601DateStringToddMMyyyy(payload.getHeadCommit().getTimestamp());
         String commitUrl = payload.getHeadCommit().getUrl();
 
-        String credentialsId = Constants.getCredentialsId();
+
         String targets = Constants.getTargets();
         String commitHash = payload.getHeadCommit().getId() + "";
 
+        //Get one available Jenkins master endpoint
+        String jenkinsEndpointUrl = JenkinsUtils.getAvailableJenkinsMasterEndpoint();
+        //Get corresponding Credential
+        String credentialsId = JenkinsUtils.getCredentialOf(jenkinsEndpointUrl);
         // Add build job, jobName is just commitHash
         queueService.add(TaskOptions.Builder.withUrl(Constants.getBuildWorkerUrl()).
                 param("jobName", commitHash).
+                //Project's page url
                 param("projectUrl", projectUrl).
+                //Jenkins's endpoint url
+                param("jenkinsEndpointUrl", jenkinsEndpointUrl).
+                //Some url..
                 param("url", url).
                 param("targets", targets).
                 param("commitHash", commitHash).
@@ -133,8 +144,10 @@ public class BuildResource {
 
         String ref = payload.getRef();
         String buildBranch = ref.substring(ref.lastIndexOf('/') + 1);
-
-        String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromCommitHash(commitHash);
+        //Progressive log
+        String jenkinsLogUrl = Constants.getJenkinsBuildLogUrlFromCommitHash(commitHash, jenkinsEndpointUrl);
+        System.out.println("Jenkins Endpoint location:" + jenkinsEndpointUrl);
+        System.out.println("Progressive Log Location:" + jenkinsLogUrl);
         String serverUrl = Constants.getServerAddress(request);
         String gcsLogPath = Constants.getGCSBuildLogUrlFromUserLoginRepoNameJobNameAndServerURL(userLogin, repoName,
                 commitHash, serverUrl);
@@ -158,8 +171,10 @@ public class BuildResource {
         // Add fecth log job
         queueService.add(TaskOptions.Builder.withUrl(Constants.getLogFecthWorkerUrl(userLogin, repoName, commitHash)).
                 param("jenkinsLogUrl", jenkinsLogUrl).
+                param("jenkinsEndpointUrl",jenkinsEndpointUrl).
                 param("interval", "5000").
                 param("currentOffset", "0").
+
                 // Job full path is used for worker to update job status when finished
                 method(Method.POST));
 

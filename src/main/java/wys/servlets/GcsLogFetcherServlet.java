@@ -36,6 +36,7 @@ import com.google.appengine.tools.cloudstorage.GcsOutputChannel;
 import com.google.appengine.tools.cloudstorage.GcsService;
 import com.google.appengine.tools.cloudstorage.GcsServiceFactory;
 import com.google.appengine.tools.cloudstorage.RetryParams;
+import com.google.apphosting.utils.remoteapi.RemoteApiPb.Request;
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.BuildResult;
 import com.offbytwo.jenkins.model.Job;
@@ -56,6 +57,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
      */
 
     private String jenkinsLogUrl;
+    private String jenkinsEndpointUrl;
     private int interval;
     private String currentOffset;
     private WebTarget target;
@@ -72,6 +74,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
         String objectPathString = objectPath.toString();
 
         jenkinsLogUrl = req.getParameter("jenkinsLogUrl");
+        jenkinsEndpointUrl = req.getParameter("jenkinsEndpointUrl");
         interval = Integer.parseInt(req.getParameter("interval"));
         currentOffset = req.getParameter("currentOffset");
         client = ClientBuilder.newClient();
@@ -85,7 +88,6 @@ public class GcsLogFetcherServlet extends HttpServlet {
 
         // Server not started that job yet, retry
         if (xTextSize == null || xTextSize == "") {
-            
             try {
                 Thread.sleep(interval);
             } catch (InterruptedException e) {
@@ -97,6 +99,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
                             Constants.getLogFecthWorkerUrl(objectPath.getUserLogin(), objectPath.getRepoName(),
                                     objectPath.getBuildName())).
                     param("jenkinsLogUrl", jenkinsLogUrl).
+                    param("jenkinsEndpointUrl", jenkinsEndpointUrl).
                     param("interval", "5000").
                     param("currentOffset", "0").
                     method(Method.POST));
@@ -107,7 +110,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
         JenkinsServer jenkins;
         try {
             // Update build status in jenkins
-            jenkins = new JenkinsServer(new URI(wys.utils.Constants.JENKINS_SERVER_API_ENDPOINT), "", "");
+            jenkins = new JenkinsServer(new URI(jenkinsEndpointUrl), "", "");
             Job job = jenkins.getJob(objectPath.getBuildName());
             Key parentKey = KeyFactory.createKey("User", objectPath.getUserLogin());
             Key childKey = KeyFactory.createKey(parentKey, "Repository", objectPath.getRepoName());
@@ -150,6 +153,7 @@ public class GcsLogFetcherServlet extends HttpServlet {
                     .withUrl(Constants.getLogFecthWorkerUrl(objectPath.getUserLogin(), objectPath.getRepoName(),
                             objectPath.getBuildName())).
                     param("jenkinsLogUrl", jenkinsLogUrl).
+                    param("jenkinsEndpointUrl", jenkinsEndpointUrl).
                     param("interval", "5000").
                     param("currentOffset", xTextSize).
                     method(Method.POST));

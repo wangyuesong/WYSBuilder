@@ -68,7 +68,6 @@ public class UsersResource {
     @Produces("application/json")
     public Response getAllRepos(@HeaderParam("Authentication") String headerToken,
             @PathParam("userLogin") String userLogin) {
-
         if (!HeaderUtils.checkHeader(headerToken, userLogin)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
