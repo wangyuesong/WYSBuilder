@@ -48,7 +48,7 @@ public class JenkinsUtils {
     // public static String[] jenkinsMasterPool = new String[] { "http://128.111.84.178:8080","http://104.197.153.90" };
     public static CredentialPair[] credentialPool  = new CredentialPair[]{
         new CredentialPair("http://128.111.84.178:8080", "d0a708cb-57c3-4cd2-9e3c-b6f094b492bc"),
-        new CredentialPair("http://104.197.153.90", "9e9b1339-b553-45ab-ac18-9f9eba570c40")
+//        new CredentialPair("http://104.197.153.90", "9e9b1339-b553-45ab-ac18-9f9eba570c40")
     };
     
    
